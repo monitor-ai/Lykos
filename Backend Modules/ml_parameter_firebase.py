@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation
-
+from tensorflow.keras.callbacks import Callback
 ##Application registration
 
 cred=credentials.Certificate("ml-parameter-firebase-adminsdk-kzlzj-689846709e.json")
@@ -18,14 +18,14 @@ X_train = np.random.rand(1000,40)
 Y_train = np.random.randint(2, size=(1000,2))
 
 
-##Callback trainingplot for losses sending                  Need To add Try Catch Statement for Exception handling and Docstrings for instruction Support..Will do later after full development
-class TrainingPlot(keras.callbacks.Callback):
-    
+##Callback trainingplot for losses sending  ##Need To add Try Catch Statement for Exception handling and Docstrings for instruction Support..Will do later after full development
+class TrainingPlot(Callback):
+
     def __init__(self,username,model_name):
-        super(keras.callbacks.Callback, self).__init__()
+        super(Callback, self).__init__()
         self.username = username
         self.model_name=model_name
-        
+
     # This function is called when the training begins
     def on_train_begin(self, logs={}):
         # Initialize the lists for holding the logs, losses and accuracies
@@ -34,7 +34,7 @@ class TrainingPlot(keras.callbacks.Callback):
         self.val_losses = []
         self.val_acc = []
         self.logs = []
-    
+
     def on_train_batch_begin(self, *args, **kwargs):
         pass
     def on_train_batch_end(self, *args, **kwargs):
@@ -57,21 +57,75 @@ class TrainingPlot(keras.callbacks.Callback):
                        # 'val_loss':self.val_losses,
                      #'val_acc':self.val_acc}})
 
+class Pausing_Model(Callback):
+    def __init__(self,username,model_name):
+        super(Callback, self).__init__()
+        self.username = username
+        self.model_name=model_name
+        self.main_ref = db.reference('/')
+        self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
+        self.stop_flag =self.users_ref.get()
 
+    def on_epoch_begin(self, epoch, logs={}):
+        #code to update flag from firebase
+        self.main_ref = db.reference('/')
+        self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
+        self.stop_flag =self.users_ref.get()
+        if self.stop_flag==1:
+            self.model.stop_training = True
+            self.model.save_weights('model_weights.h5')
+
+    def on_epoch_end(self, epoch, logs={}):
+        #code to update flag from firebase
+        self.main_ref = db.reference('/')
+        self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
+        self.stop_flag =self.users_ref.get()
+        if self.stop_flag==1:
+            self.model.stop_training = True
+            self.model.save_weights('model_weights.h5')
+
+    def on_batch_begin(self, batch, logs={}):
+        #code to update flag from firebase
+        self.main_ref = db.reference('/')
+        self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
+        self.stop_flag =self.users_ref.get()
+        if self.stop_flag==1:
+            self.model.stop_training = True
+            self.model.save_weights('model_weights.h5')
+
+    def on_batch_end(self, batch, logs={}):
+        #code to update flag from firebase
+        self.main_ref = db.reference('/')
+        self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
+        self.stop_flag =self.users_ref.get()
+        if self.stop_flag==1:
+            self.model.stop_training = True
+            self.model.save_weights('model_weights.h5')
+
+    def on_train_begin(self, logs={}):
+        #code to update flag from firebase
+        self.main_ref = db.reference('/')
+        self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
+        self.stop_flag =self.users_ref.get()
+        if self.stop_flag==1:
+            self.model.stop_training = True
+            self.model.save_weights('model_weights.h5')
 ##Main API Class
 class ML_Parameter:
     def Loss_Monitor(username,model_name):
         history=TrainingPlot(username,model_name)
         return history
-    def Pause_Model():
-        pass
+    def Pause_Model(username,model_name):
+        history=Pausing_Model(username,model_name)
+        return history
     def Resume_Model():
         pass
 
 
+
 ##Neural Network Model
 def generateModel():
-    
+
     model = Sequential()
     model.add(Dense(32,input_dim=(40)))
     model.add(Dense(64))
@@ -80,12 +134,12 @@ def generateModel():
     model.add(Activation('relu'))
     model.add(Dense(16))
     model.add(Activation('relu'))
-    
+
     model.add(Dense(2))
     model.add(Activation('softmax'))
-    
+
     model.compile(optimizer='Adam',loss='binary_crossentropy', metrics=['accuracy'])
-    
+
     return model
 
 
@@ -93,5 +147,5 @@ def generateModel():
 model = generateModel()
 
 '''history = '''
-history =ML_Parameter.Loss_Monitor("rahul","random_model")
-model.fit(X_train, Y_train, epochs=10, callbacks=[history],)
+history =ML_Parameter.Pause_Model("rahul","random_model")
+model.fit(X_train, Y_train, epochs=300, callbacks=[history],)
