@@ -259,7 +259,7 @@ class ML_Parameter:                ##Need to add Name of the Mobile Application 
         history=Pausing_Model(username,model_name,weights_file)
         return history
     '''
-    def Resume_Model(username,model_name,epochs,model_object,weights_file,):
+    def Resume_Model(username,model_name,epochs,model_object,weights_file):
 
         Function to Resume the Model after it has been stopped Remotely
 
@@ -273,7 +273,7 @@ class ML_Parameter:                ##Need to add Name of the Mobile Application 
         weights_file:Name of the Weights File which you have kept after stopping the Model
 
         Eg:
-        history =ML_Parameter.Stop_Model("rahul","random_model",model)
+        history =ML_Parameter.Stop_Model("rahul","random_model","model_weights.h5")
         model.fit(X_train, Y_train, epochs=300, callbacks=[history])
         model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
 
