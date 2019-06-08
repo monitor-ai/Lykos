@@ -13,31 +13,25 @@ cred=credentials.Certificate("ml-parameter-firebase-adminsdk-kzlzj-689846709e.js
 
 firebase_admin.initialize_app(cred, {'databaseURL': 'https://ml-parameter.firebaseio.com/'})
 
-##Training Dataset for testing the API
-X_train = np.random.rand(1000,40)
-Y_train = np.random.randint(2, size=(1000,2))
-
-
 ##Callback trainingplot for losses sending
-##Need To add Try Catch Statement for Exception handling and Docstrings for instruction Support..Will do later after full development
 class TrainingPlot(Callback):
     '''
     Callback Class for sending the loss and accuracy to firebase
     '''
 
     def __init__(self,username,model_name):
-    '''
-    Constructor
-    '''
+        '''
+        Constructor
+        '''
         super(Callback, self).__init__()
         self.username = username
         self.model_name=model_name
 
     # This function is called when the training begins
     def on_train_begin(self, logs={}):
-    '''
-    Inbuilt Callback Function which is called when training begins
-    '''
+        '''
+        Inbuilt Callback Function which is called when training begins
+        '''
         # Initialize the lists for holding the logs, losses and accuracies
         self.losses = []
         self.acc = []
@@ -46,38 +40,43 @@ class TrainingPlot(Callback):
         self.logs = []
 
     def on_train_batch_begin(self, *args, **kwargs):
-    '''
-    Inbuilt callback function which is called when training batch begins
-    '''
+        '''
+        Inbuilt callback function which is called when training batch begins
+        '''
         pass
     def on_train_batch_end(self, *args, **kwargs):
-    '''
-    Inbuilt Callback function which is called when training batch ends
-    '''
+        '''
+        Inbuilt Callback function which is called when training batch ends
+        '''
         pass
     def on_batch_end(self,batch,logs={}):
-    '''
-    Inbuilt Callback function which is called when batch ends
-    '''
+        '''
+        Inbuilt Callback function which is called when batch ends
+        '''
         pass
 
     # This function is called at the end of each epoch
-    def on_epoch_end(self, epoch, logs={}):                     ##Need to add try catch statement for val loss and accuracy as it cannot be put into firebase without it
-    '''
-    Inbuilt callback function which is called when epoch ends
-    '''
+    def on_epoch_end(self, epoch, logs={}):
+        '''
+        Inbuilt callback function which is called when epoch ends
+        '''
         # Append the logs, losses and accuracies to the lists
         self.logs.append(logs)
         self.losses.append(logs.get('loss'))
         self.acc.append(str(logs.get('accuracy')))
-        #self.val_losses.append(logs.get('val_loss'))
-        #self.val_acc.append(logs.get('val_acc'))
+        self.val_losses.append(logs.get('val_loss'))
+        self.val_acc.append(str(logs.get('val_accuracy')))
         main_ref = db.reference('/')
         users_ref = main_ref.child(self.username)
-        users_ref.set({self.model_name:{'acc':self.acc,
-                       'loss':self.losses}})
-                       # 'val_loss':self.val_losses,
-                     #'val_acc':self.val_acc}})
+        if None in self.val_losses:
+            users_ref.set({self.model_name:{'acc':self.acc,
+                           'loss':self.losses}})
+        else:
+            users_ref.set({self.model_name:{'acc':self.acc,
+                                            'loss':self.losses,
+                                            'val_loss':self.val_losses,
+                                            'val_acc':self.val_acc}
+                         })
 
 
 ##Callback Pausing_Model for model pausing
@@ -96,9 +95,9 @@ class Pausing_Model(Callback):
         self.weights_file=weights_file
 
     def on_epoch_begin(self, epoch, logs={}):
-    '''
-    Inbuilt Callback Function which is called when loop begins
-    '''
+        '''
+        Inbuilt Callback Function which is called when loop begins
+        '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
@@ -114,9 +113,9 @@ class Pausing_Model(Callback):
             self.epoch=self.epoch+1
 
     def on_epoch_end(self, epoch, logs={}):
-    '''
-    Inbuilt Callback Function which is called when loop ends
-    '''
+        '''
+        Inbuilt Callback Function which is called when loop ends
+        '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
@@ -130,9 +129,9 @@ class Pausing_Model(Callback):
             print("training stopped-epoch end %d" % epoch)
 
     def on_batch_begin(self, batch, logs={}):
-    '''
-    Inbuilt Callback Function which is called when batch starts
-    '''
+        '''
+        Inbuilt Callback Function which is called when batch starts
+        '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
@@ -146,9 +145,9 @@ class Pausing_Model(Callback):
             print("training stopped-batch begin %d" % batch)
 
     def on_batch_end(self, batch, logs={}):
-    '''
-    Inbuilt Callback Function which is called when batch ends
-    '''
+        '''
+        Inbuilt Callback Function which is called when batch ends
+        '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
@@ -162,9 +161,9 @@ class Pausing_Model(Callback):
             print("training stopped-batch end %d" % batch)
 
     def on_train_begin(self, logs={}):
-    '''
-    Inbuilt Callback Function which is called when training begins
-    '''
+        '''
+        Inbuilt Callback Function which is called when training begins
+        '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
@@ -185,9 +184,9 @@ class Resume_Model:
     Class for Resuming the Model after Pause
     '''
     def __init__(self,username,model_name,epochs,model_object,weights_file):
-    '''
-    Constructor
-    '''
+        '''
+        Constructor
+        '''
         self.username=username
         self.model_name=model_name
         self.epochs=epochs
@@ -249,8 +248,9 @@ class ML_Parameter:
         '''
         history=Pausing_Model(username,model_name,weights_file)
         return history
+    '''
     def Resume_Model(username,model_name,epochs,model_object,weights_file):
-        '''
+
         Function to Resume the Model after it has been stopped Remotely
 
         Note:Can Be Used only when Stop_Model Function of the class has been used
@@ -266,36 +266,7 @@ class ML_Parameter:
         history =ML_Parameter.Stop_Model("rahul","random_model")
         model.fit(X_train, Y_train, epochs=300, callbacks=[history])
         model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
-        '''
+
         model=Resume_Model(username,model_name,epochs,model_object,weights_file).resume()
         return model
-
-
-
-##Neural Network Model for testing
-def generateModel():
-
-    model = Sequential()
-    model.add(Dense(32,input_dim=(40)))
-    model.add(Dense(64))
-    model.add(Activation('relu'))
-    model.add(Dense(32))
-    model.add(Activation('relu'))
-    model.add(Dense(16))
-    model.add(Activation('relu'))
-
-    model.add(Dense(2))
-    model.add(Activation('softmax'))
-
-    model.compile(optimizer='Adam',loss='binary_crossentropy', metrics=['accuracy'])
-
-    return model
-
-
-#Testing The Model and callbacks
-model = generateModel()
-
-'''history = '''
-history =ML_Parameter.Pause_Model("rahul","random_model")
-model.fit(X_train, Y_train, epochs=300, callbacks=[history],)
-#model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
+    '''
