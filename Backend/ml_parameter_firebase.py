@@ -238,10 +238,6 @@ class ML_Parameter:                ##Need to add Name of the Mobile Application 
         history =ML_Parameter.Loss_Monitor("rahul","random_model")
         model.fit(X_train, Y_train, epochs=300, callbacks=[history])
         '''
-        #username_val=db.reference('/').child(username).get()
-        #if(username_val is None):
-            #print("Register to the Mobile Application for using this Function")
-        #else:
         history=TrainingPlot(username,model_name)
         return history
     def Stop_Model(username,model_name,weights_file):
