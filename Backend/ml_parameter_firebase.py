@@ -26,12 +26,18 @@ class TrainingPlot(Callback):
     '''
 
     def __init__(self,username,model_name):
+    '''
+    Constructor
+    '''
         super(Callback, self).__init__()
         self.username = username
         self.model_name=model_name
 
     # This function is called when the training begins
     def on_train_begin(self, logs={}):
+    '''
+    Inbuilt Callback Function which is called when training begins
+    '''
         # Initialize the lists for holding the logs, losses and accuracies
         self.losses = []
         self.acc = []
@@ -40,14 +46,26 @@ class TrainingPlot(Callback):
         self.logs = []
 
     def on_train_batch_begin(self, *args, **kwargs):
+    '''
+    Inbuilt callback function which is called when training batch begins
+    '''
         pass
     def on_train_batch_end(self, *args, **kwargs):
+    '''
+    Inbuilt Callback function which is called when training batch ends
+    '''
         pass
     def on_batch_end(self,batch,logs={}):
+    '''
+    Inbuilt Callback function which is called when batch ends
+    '''
         pass
 
     # This function is called at the end of each epoch
     def on_epoch_end(self, epoch, logs={}):                     ##Need to add try catch statement for val loss and accuracy as it cannot be put into firebase without it
+    '''
+    Inbuilt callback function which is called when epoch ends
+    '''
         # Append the logs, losses and accuracies to the lists
         self.logs.append(logs)
         self.losses.append(logs.get('loss'))
@@ -167,6 +185,9 @@ class Resume_Model:
     Class for Resuming the Model after Pause
     '''
     def __init__(self,username,model_name,epochs,model_object,weights_file):
+    '''
+    Constructor
+    '''
         self.username=username
         self.model_name=model_name
         self.epochs=epochs
@@ -174,6 +195,9 @@ class Resume_Model:
         self.remaining_epochs=int(db.reference('/').child(self.username).child(self.model_name).child("epoch").get())
         self.weights_file=weights_file
     def resume(self):
+        '''
+        This Function is Called when The model needs to be resumed after it is paused using Pausing_Model Callback Class
+        '''
         self.stop_flag_reference=db.reference('/').child(self.username).child(self.model_name).child("stop_flag")
         while True:
             if self.stop_flag_reference.get()==0:
