@@ -24,6 +24,9 @@ class TrainingPlot(Callback):
         Constructor
         '''
         super(Callback, self).__init__()
+        username_val=db.reference('/').child(username).get()
+        if(username_val is None):
+            raise Exception('Register to the Application')
         self.username = username
         self.model_name=model_name
 
@@ -86,6 +89,9 @@ class Pausing_Model(Callback):
     '''
     def __init__(self,username,model_name,weights_file):
         super(Callback, self).__init__()  ##Constructor Override for initializing custom parameters
+        username_val=db.reference('/').child(username).get()
+        if(username_val is None):
+            raise Exception('Register to the Application')
         self.username = username
         self.model_name=model_name
         self.main_ref = db.reference('/')
@@ -187,6 +193,9 @@ class Resume_Model:
         '''
         Constructor
         '''
+        username_val=db.reference('/').child(username).get()
+        if(username_val is None):
+            raise Exception('Register to the Application')
         self.username=username
         self.model_name=model_name
         self.epochs=epochs
@@ -264,7 +273,7 @@ class ML_Parameter:                ##Need to add Name of the Mobile Application 
         weights_file:Name of the Weights File which you have kept after stopping the Model
 
         Eg:
-        history =ML_Parameter.Stop_Model("rahul","random_model")
+        history =ML_Parameter.Stop_Model("rahul","random_model","model_weights.h5")
         model.fit(X_train, Y_train, epochs=300, callbacks=[history])
         model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
 
