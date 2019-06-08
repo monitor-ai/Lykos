@@ -21,6 +21,9 @@ Y_train = np.random.randint(2, size=(1000,2))
 ##Callback trainingplot for losses sending
 ##Need To add Try Catch Statement for Exception handling and Docstrings for instruction Support..Will do later after full development
 class TrainingPlot(Callback):
+    '''
+    Callback Class for sending the loss and accuracy to firebase
+    '''
 
     def __init__(self,username,model_name):
         super(Callback, self).__init__()
@@ -61,23 +64,30 @@ class TrainingPlot(Callback):
 
 ##Callback Pausing_Model for model pausing
 class Pausing_Model(Callback):
-    def __init__(self,username,model_name):
-        super(Callback, self).__init__()
+    '''
+    Callback Class for Pausing or Stopping the Model
+    '''
+    def __init__(self,username,model_name,weights_file):
+        super(Callback, self).__init__()  ##Constructor Override for initializing custom parameters
         self.username = username
         self.model_name=model_name
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         self.epoch=0
+        self.weights_file=weights_file
 
     def on_epoch_begin(self, epoch, logs={}):
+    '''
+    Inbuilt Callback Function which is called when loop begins
+    '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         if self.stop_flag==1:
             self.model.stop_training = True
-            self.model.save_weights('model_weights.h5')
+            self.model.save_weights(self.weights_file)
             main_ref = db.reference('/')
             users_ref = main_ref.child(self.username).child(self.model_name).child("epoch")
             users_ref.set(self.epoch)
@@ -86,52 +96,64 @@ class Pausing_Model(Callback):
             self.epoch=self.epoch+1
 
     def on_epoch_end(self, epoch, logs={}):
+    '''
+    Inbuilt Callback Function which is called when loop ends
+    '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         if self.stop_flag==1:
             self.model.stop_training = True
-            self.model.save_weights('model_weights.h5')
+            self.model.save_weights(self.weights_file)
             main_ref = db.reference('/')
             users_ref = main_ref.child(self.username).child(self.model_name).child("epoch")
             users_ref.set(self.epoch)
             print("training stopped-epoch end %d" % epoch)
 
     def on_batch_begin(self, batch, logs={}):
+    '''
+    Inbuilt Callback Function which is called when batch starts
+    '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         if self.stop_flag==1:
             self.model.stop_training = True
-            self.model.save_weights('model_weights.h5')
+            self.model.save_weights(self.weights_file)
             main_ref = db.reference('/')
             users_ref = main_ref.child(self.username).child(self.model_name).child("epoch")
             users_ref.set(self.epoch)
             print("training stopped-batch begin %d" % batch)
 
     def on_batch_end(self, batch, logs={}):
+    '''
+    Inbuilt Callback Function which is called when batch ends
+    '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         if self.stop_flag==1:
             self.model.stop_training = True
-            self.model.save_weights('model_weights.h5')
+            self.model.save_weights(self.weights_file)
             main_ref = db.reference('/')
             users_ref = main_ref.child(self.username).child(self.model_name).child("epoch")
             users_ref.set(self.epoch)
             print("training stopped-batch end %d" % batch)
 
     def on_train_begin(self, logs={}):
+    '''
+    Inbuilt Callback Function which is called when training begins
+    '''
         #code to update flag from firebase
         self.main_ref = db.reference('/')
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         if self.stop_flag==1:
             self.model.stop_training = True
-            self.model.save_weights('model_weights.h5')
+            self.model.save_weights(self.weights_file)
             main_ref = db.reference('/')
             users_ref = main_ref.child(self.username).child(self.model_name).child("epoch")
             users_ref.set(self.epoch)
@@ -141,18 +163,21 @@ class Pausing_Model(Callback):
 
 ##Class resume Model for resuming the model after pausing. can be only used when pause callback is used
 class Resume_Model:
+    '''
+    Class for Resuming the Model after Pause
+    '''
     def __init__(self,username,model_name,epochs,model_object,weights_file):
         self.username=username
         self.model_name=model_name
         self.epochs=epochs
         self.model=model_object
         self.remaining_epochs=int(db.reference('/').child(self.username).child(self.model_name).child("epoch").get())
-        self.weights=weights_file
+        self.weights_file=weights_file
     def resume(self):
         self.stop_flag_reference=db.reference('/').child(self.username).child(self.model_name).child("stop_flag")
         while True:
             if self.stop_flag_reference.get()==0:
-                self.model.load_weights(self.weights)
+                self.model.load_weights(self.weights_file)
                 self.model.fit(X_train, Y_train, epochs=self.remaining_epochs,verbose=2)
                 self.model.save_weights("my_model_1.h5")
                 break
@@ -162,13 +187,62 @@ class Resume_Model:
 
 ##Main API Class
 class ML_Parameter:
+    '''
+    Main API Class
+    '''
     def Loss_Monitor(username,model_name):
+        '''
+        Funtion to send Losses and Accuracy which is observed in the Mobile Application
+
+        Arguments:
+        username:The Sign In Username used in the mobile application
+        model_name:The name of the Model as set in the mobile application
+
+        Returns:
+        history:Callback object which has all the losses and accuracy
+
+        Eg:
+        history =ML_Parameter.Loss_Monitor("rahul","random_model")
+        model.fit(X_train, Y_train, epochs=300, callbacks=[history])
+        '''
         history=TrainingPlot(username,model_name)
         return history
-    def Pause_Model(username,model_name):
-        history=Pausing_Model(username,model_name)
+    def Stop_Model(username,model_name,weights_file):
+        '''
+        Function to Stop the Model Remotely and Store weights
+
+        Arguments:
+        username:The Sign In Username used in the mobile application
+        model_name:The name of the Model as set in the mobile application
+        weights_file:Name of the Weights File which you want to keep after stopping the Model
+
+        Returns:
+        history:Callback object which has all the losses and accuracy
+
+        Eg:
+        history =ML_Parameter.Stop_Model("rahul","random_model","model_weights.h5")
+        model.fit(X_train, Y_train, epochs=300, callbacks=[history])
+        '''
+        history=Pausing_Model(username,model_name,weights_file)
         return history
     def Resume_Model(username,model_name,epochs,model_object,weights_file):
+        '''
+        Function to Resume the Model after it has been stopped Remotely
+
+        Note:Can Be Used only when Stop_Model Function of the class has been used
+
+        Arguments:
+        username:The Sign In Username used in the mobile application
+        model_name:The name of the Model as set in the mobile application
+        epochs:Total Number of epochs you want the model to run after resuming
+        model_object:The Sequential or keras model reference object
+        weights_file:Name of the Weights File which you have kept after stopping the Model
+
+        Eg:
+        history =ML_Parameter.Stop_Model("rahul","random_model")
+        model.fit(X_train, Y_train, epochs=300, callbacks=[history])
+        model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
+        '''
         model=Resume_Model(username,model_name,epochs,model_object,weights_file).resume()
         return model
 
@@ -200,4 +274,4 @@ model = generateModel()
 '''history = '''
 history =ML_Parameter.Pause_Model("rahul","random_model")
 model.fit(X_train, Y_train, epochs=300, callbacks=[history],)
-model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
+#model_new=ML_Parameter.Resume_Model("rahul","random_model",10,model,'model_weights.h5')
