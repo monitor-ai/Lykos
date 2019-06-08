@@ -209,9 +209,10 @@ class Resume_Model:
 
 
 ##Main API Class
-class ML_Parameter:
+class ML_Parameter:                ##Need to add Name of the Mobile Application Later and Change the Class Name to the App Name
     '''
-    Main API Class
+    Library for Monitoring Training and Validation Losses,Accuracy Remotely through Mobile Application
+    Along with the feature of Remotely Stopping the Model Through The application
     '''
     def Loss_Monitor(username,model_name):
         '''
