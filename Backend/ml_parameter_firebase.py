@@ -98,7 +98,7 @@ class Pausing_Model(Callback):
         self.users_ref = self.main_ref.child(self.username).child(self.model_name).child("stop_flag")
         self.stop_flag =self.users_ref.get()
         self.epoch=0
-        self.weights_file=weights_files
+        self.weights_file=weights_file
 
     def on_epoch_begin(self, epoch, logs={}):
         '''
