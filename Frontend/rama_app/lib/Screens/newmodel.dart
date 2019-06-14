@@ -4,8 +4,10 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class NewModel extends StatefulWidget{
   DatabaseReference _db;
-  NewModel(DatabaseReference db){
+  String _email;
+  NewModel(DatabaseReference db, String email){
     this._db = db;
+    this._email = email;
   }
   @override
   State<StatefulWidget> createState() {
@@ -17,12 +19,19 @@ class _NewModelState extends State<NewModel>{
   final formKey = GlobalKey<FormState>();
   String ModelName;
   String ModelKey;
+  FocusNode _focusNode = new FocusNode();
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
 
-      modelRef = widget._db.push();
+      modelRef = widget._db.child(widget._email).push();
       ModelKey = modelRef.key;
       return Scaffold(
+        resizeToAvoidBottomPadding: true,
         backgroundColor: Theme
             .of(context)
             .primaryColor,
@@ -34,26 +43,29 @@ class _NewModelState extends State<NewModel>{
 
         ),
         floatingActionButton: FloatingActionButton.extended(
-            icon: Icon(Icons.save),
-            label: Text("Save"),
+            icon: Icon(Icons.save, color: Theme.of(context).primaryColor,),
+            backgroundColor: Colors.white,
+            label: Text("Save", style: TextStyle(color: Theme.of(context).primaryColor),),
             onPressed: save,
         ),
         body: Container(
           margin: EdgeInsets.all(20),
             child:
             Form(
+
               key: formKey,
               child: Column(
                   children: <Widget>[
 
                     Container(
-                      margin: EdgeInsets.only(top: 25, bottom: 25),
+                      margin: EdgeInsets.only(top: 25, bottom: 100),
                       child:
                       Hero(
                         child: Icon(Icons.book, size: 100, color: Colors.white,),
                         tag: "newModel",
                       ),
                     ),
+
                     Container(
                       margin: EdgeInsets.only(top:10, bottom: 10),
                       child:TextFormField(
@@ -91,6 +103,7 @@ class _NewModelState extends State<NewModel>{
                         style: TextStyle(
                             color: Colors.white
                         ),
+                        focusNode: _focusNode,
                         cursorColor: Colors.white,
                         decoration: InputDecoration(
                             enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white), borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -120,8 +133,9 @@ class _NewModelState extends State<NewModel>{
       modelRef.set({
         'ModelName': ModelName,
       });
+      Navigator.pop(context);
+
     }
-    Navigator.pop(context);
   }
   _showDialog(title, text, okButton) {
     showDialog(

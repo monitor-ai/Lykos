@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rama_app/Screens/home.dart';
 import 'dart:io';
 import 'user_repository.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 
 class Login extends StatefulWidget {
   UserRepository _userRepository;
   VoidCallback _signedIn;
   bool formType = true;
+  DatabaseReference _db;
 
-  Login(UserRepository _userRepository, VoidCallback _signedIn){
+  Login(UserRepository _userRepository, VoidCallback _signedIn, DatabaseReference db){
     this._userRepository = _userRepository;
     this._signedIn = _signedIn;
+    this._db = db;
   }
   @override
   State<StatefulWidget> createState() {
@@ -37,7 +41,12 @@ class _LoginState extends State<Login>{
       return registerForm();
     }
   }
+
   Widget registerForm(){
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      systemNavigationBarColor: Theme.of(context).primaryColor, // navigation bar color
+      systemNavigationBarIconBrightness: Brightness.light
+    ));
     return Container(
         color: Theme.of(context).primaryColor,
         child: Container(
@@ -99,7 +108,7 @@ class _LoginState extends State<Login>{
                                               }
                                             },
                                             decoration: InputDecoration(
-                                                icon: Icon(Icons.account_circle),
+                                                prefixIcon: Icon(Icons.account_circle),
                                                 labelText: "First Name",
                                                 labelStyle: TextStyle(
                                                     fontFamily: "Raleway")),
@@ -121,7 +130,7 @@ class _LoginState extends State<Login>{
                                               }
                                             },
                                             decoration: InputDecoration(
-                                                icon: Icon(Icons.supervised_user_circle),
+                                                prefixIcon: Icon(Icons.supervised_user_circle),
                                                 labelText: "Last Name",
                                                 labelStyle: TextStyle(
                                                     fontFamily: "Raleway")),
@@ -143,7 +152,7 @@ class _LoginState extends State<Login>{
                                               }
                                             },
                                             decoration: InputDecoration(
-                                                icon: Icon(Icons.email),
+                                                prefixIcon: Icon(Icons.email),
                                                 labelText: "Email",
                                                 labelStyle: TextStyle(
                                                     fontFamily: "Raleway")),
@@ -160,7 +169,7 @@ class _LoginState extends State<Login>{
                                               }
                                             },
                                             decoration: InputDecoration(
-                                              icon: Icon(Icons.lock),
+                                              prefixIcon: Icon(Icons.lock),
                                               labelText: "Password",
                                               labelStyle: TextStyle(
                                                   fontFamily: "Raleway"),
@@ -228,6 +237,10 @@ class _LoginState extends State<Login>{
 
 
   Widget loginForm(){
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      systemNavigationBarColor: Theme.of(context).primaryColor,
+      systemNavigationBarIconBrightness: Brightness.light// navigation bar color
+    ));
     return Container(
         color: Color.fromRGBO(60, 117, 209, 1),
         child: Container(
@@ -289,7 +302,7 @@ class _LoginState extends State<Login>{
                                               }
                                             },
                                             decoration: InputDecoration(
-                                                icon: Icon(Icons.email),
+                                                prefixIcon: Icon(Icons.email),
                                                 labelText: "Email",
                                                 labelStyle: TextStyle(
                                                     fontFamily: "Raleway")),
@@ -309,7 +322,7 @@ class _LoginState extends State<Login>{
                                               }
                                             },
                                             decoration: InputDecoration(
-                                              icon: Icon(Icons.lock),
+                                              prefixIcon: Icon(Icons.lock),
                                               labelText: "Password",
                                               labelStyle: TextStyle(
                                                   fontFamily: "Raleway"),
@@ -390,6 +403,11 @@ class _LoginState extends State<Login>{
           try {
             _showDialog("Registering you...", "Please wait while we register you!", false);
             await widget._userRepository.signUp(_email, _password);
+            String uid = await widget._userRepository.currentUser();
+            widget._db.child(uid).set({
+              'fName': _firstName,
+              'lName': _lastName
+            });
             Navigator.of(context).pop();
             widget._signedIn();
 

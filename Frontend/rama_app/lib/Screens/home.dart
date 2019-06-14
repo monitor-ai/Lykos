@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rama_app/Setup/login.dart';
 import '../Setup/user_repository.dart';
 import '../Setup/FABBottomAppBar.dart';
@@ -26,6 +27,7 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   String _email = "";
   String _name = "";
+  String _uid = "";
   int _x = 0;
 
   @override
@@ -46,16 +48,40 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final double statusBarHeight = MediaQuery.of(context).padding.top;
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark// navigation bar color
+    ));
     if (_email == "") {
-      widget._userRepository.getUser().then((String x) {
+      widget._userRepository.currentUser().then((String uid){
         setState(() {
-          _email = x;
-          _name = "Daksh Pokar";
+          _uid = uid;
         });
       });
-      return SpinKitCircle();
+      if(_uid.length > 0) {
+        print("In here!");
+        DatabaseReference temp = widget._db.child(_uid);
+        temp.once().then((DataSnapshot snapshot) {
+          Map<String, String> values = snapshot.value;
+          values.forEach((keys, value) {
+            setState(() {
+              print(value);
+            });
+          });
+        });
+      }
+      widget._userRepository.getUserEmail().then((String x) {
+        setState(() {
+          _email = x;
+        });
+      });
+      return Container(
+        height: 100,
+        child: SpinKitDoubleBounce(color: Theme.of(context).primaryColor),
+      );
     } else {
       return Scaffold(
+        resizeToAvoidBottomPadding: true,
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black),
@@ -78,7 +104,7 @@ class _HomePageState extends State<HomePage>
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => NewModel(widget._db)));
+                MaterialPageRoute(builder: (context) => NewModel(widget._db, _email)));
           },
           tooltip: 'Add new Model',
           label: Text("New Model"),
