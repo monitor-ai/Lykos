@@ -34,10 +34,9 @@ class _HomePageState extends State<HomePage>
   List<Model> models;
   String _email = "";
   String _name = "";
-  String _uid = "";
   String _fName= "", _lName="";
   int _x = 0;
-
+  bool loading = false;
   StreamSubscription<Event> _onModelAddedSubscription;
   StreamSubscription<Event> _onModelChangedSubscription;
 
@@ -75,7 +74,7 @@ class _HomePageState extends State<HomePage>
         systemNavigationBarIconBrightness:
             Brightness.dark // navigation bar color
         ));
-    if (_email == "") {
+    if (_email == "" || loading == true) {
 
       widget._userRepository.getUserEmail().then((String x) {
         setState(() {
@@ -116,7 +115,7 @@ class _HomePageState extends State<HomePage>
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => NewModel(widget._db, _uid)));
+                    builder: (context) => NewModel(widget._db, widget._id)));
           },
           tooltip: 'Add new Model',
           label: Text("New Model"),
@@ -130,58 +129,48 @@ class _HomePageState extends State<HomePage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  height: 200,
-                  child:  FirebaseAnimatedList(
-                    query: modelsRef,
-                    itemBuilder: (BuildContext bc, DataSnapshot ds, Animation<double> animation, int index){
-                          
-                          return Card(
-                                elevation: 20,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                                child: Container(
-                                  margin: EdgeInsets.all(10),
-                                  child: Wrap(
-                                    children: <Widget>[
-                                      Row(
-                                        children: <Widget>[
-                                          Icon(Icons.book, size: 50,),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text(models[index].name, style: TextStyle(fontSize: 20),),
-                                              Text(models[index].id, style: TextStyle(fontSize: 15),)
-                                            ],
-                                          ),
+                  child:  Flexible(
+                    child:FirebaseAnimatedList(
+                      query: modelsRef,
+                      itemBuilder: (BuildContext bc, DataSnapshot ds, Animation<double> animation, int index){
 
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          child: Card(
+                            elevation: 10,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            child: Container(
+                              margin: EdgeInsets.all(10),
+                              child: Wrap(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(Icons.book, size: 50,),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(models[index].name, style: TextStyle(fontSize: 20),),
+                                          Text(models[index].id, style: TextStyle(fontSize: 15),)
                                         ],
                                       ),
+
                                     ],
                                   ),
-                                ),
-                          );
-
-                            }
+                                ],
+                              ),
                             ),
+                          ),
+                        );
+
+                      }
+                  ),
+                  ),
 
                   ),
 
-                Text("Trained Model"),
-                Container(
-                  margin: EdgeInsets.only(top: 10),
-                  width: double.infinity,
-                  child: Card(
-                      elevation: 20,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      child: Wrap(
-                        children: <Widget>[
-                          Text(_email),
-                        ],
-                      )),
-                ),
+
               ],
             )),
       );
@@ -189,7 +178,11 @@ class _HomePageState extends State<HomePage>
   }
   _onModelAdd(Event event){
     setState(() {
+      loading = true;
+    });
+    setState(() {
       models.add(new Model.fromSnapshot(event.snapshot));
+      loading = false;
     });
   }
   _showDialog(title, text, okButton) {
@@ -246,7 +239,7 @@ class _HomePageState extends State<HomePage>
 
         );
       });
-      widget._db.child(_uid).once().then((DataSnapshot snapshot) {
+      widget._db.child(widget._id).once().then((DataSnapshot snapshot) {
         Map<dynamic, dynamic> x = snapshot.value;
         dynamic first, last;
         x.forEach((key, value) {
