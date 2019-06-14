@@ -4,10 +4,10 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class NewModel extends StatefulWidget{
   DatabaseReference _db;
-  String _email;
-  NewModel(DatabaseReference db, String email){
+  String _uid;
+  NewModel(DatabaseReference db, String _uid){
     this._db = db;
-    this._email = email;
+    this._uid = _uid;
   }
   @override
   State<StatefulWidget> createState() {
@@ -19,6 +19,7 @@ class _NewModelState extends State<NewModel>{
   final formKey = GlobalKey<FormState>();
   String ModelName;
   String ModelKey;
+
   FocusNode _focusNode = new FocusNode();
   @override
   void initState() {
@@ -28,7 +29,7 @@ class _NewModelState extends State<NewModel>{
   @override
   Widget build(BuildContext context) {
 
-      modelRef = widget._db.child(widget._email).push();
+      modelRef = widget._db.child(widget._uid).child("models").push();
       ModelKey = modelRef.key;
       return Scaffold(
         resizeToAvoidBottomPadding: true,
@@ -37,7 +38,7 @@ class _NewModelState extends State<NewModel>{
             .primaryColor,
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.white),
-          title: Text("New Model"),
+          title: Text("New Model", style: TextStyle(fontFamily: "Raleway"),),
           centerTitle: true,
           elevation: 0,
 
@@ -131,7 +132,7 @@ class _NewModelState extends State<NewModel>{
     if (form.validate()) {
       form.save();
       modelRef.set({
-        'ModelName': ModelName,
+        'name': ModelName,
       });
       Navigator.pop(context);
 

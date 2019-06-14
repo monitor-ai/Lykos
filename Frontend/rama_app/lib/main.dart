@@ -25,6 +25,7 @@ class _AppState extends State<App> with TickerProviderStateMixin {
   int status = -1;
   AnimationController controller;
   Animation<double> animation;
+  String id;
 
   initState() {
     super.initState();
@@ -33,6 +34,8 @@ class _AppState extends State<App> with TickerProviderStateMixin {
         duration: const Duration(milliseconds: 1500), vsync: this);
     animation = CurvedAnimation(parent: controller, curve: Curves.easeIn);
     controller.forward();
+
+
   }
   void _signedIn() {
     setState(() {
@@ -52,10 +55,12 @@ class _AppState extends State<App> with TickerProviderStateMixin {
     super.didChangeDependencies();
     _userRepository.currentUser().then((String x){
       setState(() {
+
         if(x == null){
           status = 0;
         }
         else{
+          id = x;
           status = 1;
         }
       });
@@ -68,7 +73,7 @@ class _AppState extends State<App> with TickerProviderStateMixin {
     Widget home = null;
 
     if(status == 1){
-      home = HomePage(_userRepository, _signedOut, db);
+      home = HomePage(_userRepository, _signedOut, db, id);
     }
     else if(status == 0){
       home = Login(_userRepository, _signedIn, db);

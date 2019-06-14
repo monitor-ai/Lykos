@@ -1,21 +1,27 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rama_app/Setup/login.dart';
+import 'package:rama_app/Setup/model.dart';
 import '../Setup/user_repository.dart';
 import '../Setup/FABBottomAppBar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'newmodel.dart';
-
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 
 class HomePage extends StatefulWidget {
   UserRepository _userRepository;
   VoidCallback _signedOut;
   DatabaseReference _db;
-  HomePage(UserRepository _userRepository, VoidCallback _signedOut, DatabaseReference db) {
+  String _id;
+  HomePage(UserRepository _userRepository, VoidCallback _signedOut,
+      DatabaseReference db, String id) {
     this._userRepository = _userRepository;
     this._signedOut = _signedOut;
     this._db = db;
+    this._id = id;
   }
   @override
   State<StatefulWidget> createState() {
@@ -25,14 +31,25 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+  List<Model> models;
   String _email = "";
   String _name = "";
   String _uid = "";
+  String _fName= "", _lName="";
   int _x = 0;
+
+  StreamSubscription<Event> _onModelAddedSubscription;
+  StreamSubscription<Event> _onModelChangedSubscription;
+
+  DatabaseReference modelsRef;
 
   @override
   void initState() {
     super.initState();
+    models = new List();
+    modelsRef =  widget._db.child(widget._id).child('models');
+    _onModelAddedSubscription = modelsRef.onChildAdded.listen(_onModelAdd);
+
   }
 
   void _selectedTab(int index) {
@@ -43,33 +60,23 @@ class _HomePageState extends State<HomePage>
       }
     });
   }
-
+  @override
+  void dispose() {
+    _onModelAddedSubscription.cancel();
+    _onModelChangedSubscription.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark// navigation bar color
-    ));
+        systemNavigationBarIconBrightness:
+            Brightness.dark // navigation bar color
+        ));
     if (_email == "") {
-      widget._userRepository.currentUser().then((String uid){
-        setState(() {
-          _uid = uid;
-        });
-      });
-      if(_uid.length > 0) {
-        print("In here!");
-        DatabaseReference temp = widget._db.child(_uid);
-        temp.once().then((DataSnapshot snapshot) {
-          Map<String, String> values = snapshot.value;
-          values.forEach((keys, value) {
-            setState(() {
-              print(value);
-            });
-          });
-        });
-      }
+
       widget._userRepository.getUserEmail().then((String x) {
         setState(() {
           _email = x;
@@ -80,6 +87,9 @@ class _HomePageState extends State<HomePage>
         child: SpinKitDoubleBounce(color: Theme.of(context).primaryColor),
       );
     } else {
+
+      //_onModelChangedSubscription = modelsRef.onChildChanged.listen(_onModelUpdate);
+
       return Scaffold(
         resizeToAvoidBottomPadding: true,
         backgroundColor: Theme.of(context).backgroundColor,
@@ -103,8 +113,10 @@ class _HomePageState extends State<HomePage>
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => NewModel(widget._db, _email)));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => NewModel(widget._db, _uid)));
           },
           tooltip: 'Add new Model',
           label: Text("New Model"),
@@ -117,21 +129,44 @@ class _HomePageState extends State<HomePage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text("Currently Running Model"),
                 Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 30),
-                  width: double.infinity,
-                  child: Card(
-                      elevation: 20,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      child: Wrap(
-                        children: <Widget>[
-                          Text(_email),
-                        ],
-                      )),
-                ),
+                  height: 200,
+                  child:  FirebaseAnimatedList(
+                    query: modelsRef,
+                    itemBuilder: (BuildContext bc, DataSnapshot ds, Animation<double> animation, int index){
+                          
+                          return Card(
+                                elevation: 20,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                ),
+                                child: Container(
+                                  margin: EdgeInsets.all(10),
+                                  child: Wrap(
+                                    children: <Widget>[
+                                      Row(
+                                        children: <Widget>[
+                                          Icon(Icons.book, size: 50,),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(models[index].name, style: TextStyle(fontSize: 20),),
+                                              Text(models[index].id, style: TextStyle(fontSize: 15),)
+                                            ],
+                                          ),
+
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          );
+
+                            }
+                            ),
+
+                  ),
+
                 Text("Trained Model"),
                 Container(
                   margin: EdgeInsets.only(top: 10),
@@ -152,7 +187,11 @@ class _HomePageState extends State<HomePage>
       );
     }
   }
-
+  _onModelAdd(Event event){
+    setState(() {
+      models.add(new Model.fromSnapshot(event.snapshot));
+    });
+  }
   _showDialog(title, text, okButton) {
     showDialog(
       context: context,
@@ -193,37 +232,71 @@ class _HomePageState extends State<HomePage>
   }
 
   void _showBottomDialog(context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext bc) {
-          return Container(
-            child: new Wrap(
+    if(_fName == "" && _lName == "") {
+      showModalBottomSheet(context: context, builder: (BuildContext bc) {
+        return Container(
+          margin: EdgeInsets.only(top: 20, bottom: 20),
+          child: new Wrap(
               children: <Widget>[
-                UserAccountsDrawerHeader(
-                    currentAccountPicture: Icon(
-                      Icons.account_circle,
-                      size: 75,
-                      color: Colors.white,
-                    ),
-                    accountName: new Text(
-                      _name,
-                      style: new TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.w500),
-                    ),
-                    accountEmail: new Text(
-                      _email,
-                      style: new TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.w500),
-                    )),
-                new ListTile(
-                  leading: new Icon(Icons.exit_to_app),
-                  title: new Text('Log Out'),
-                  onTap: signOut,
-                ),
-              ],
-            ),
-          );
+                SpinKitDoubleBounce(color: Theme
+                    .of(context)
+                    .primaryColor),
+              ]
+          ),
+
+        );
+      });
+      widget._db.child(_uid).once().then((DataSnapshot snapshot) {
+        Map<dynamic, dynamic> x = snapshot.value;
+        dynamic first, last;
+        x.forEach((key, value) {
+          if (key == "fName") {
+            first = value;
+          } else if(key == "lName"){
+            last = value;
+          }
         });
+        setState(() {
+          _fName = first.toString();
+          _lName = last.toString();
+          Navigator.pop(context);
+          _showBottomDialog(context);
+        });
+      });
+    }
+    else {
+      showModalBottomSheet(
+          context: context,
+          builder: (BuildContext bc) {
+            return Container(
+              child: new Wrap(
+                children: <Widget>[
+                  UserAccountsDrawerHeader(
+                      currentAccountPicture: Icon(
+                        Icons.account_circle,
+                        size: 75,
+                        color: Colors.white,
+                      ),
+                      accountName: new Text(
+                        _fName + " " + _lName,
+                        style: new TextStyle(
+                            fontSize: 18.0, fontWeight: FontWeight.w500),
+                      ),
+                      accountEmail: new Text(
+                        _email,
+                        style: new TextStyle(
+                            fontSize: 18.0, fontWeight: FontWeight.w500),
+                      )),
+                  new ListTile(
+                    leading: new Icon(Icons.exit_to_app),
+                    title: new Text('Log Out'),
+                    onTap: signOut,
+                  ),
+                ],
+              ),
+            );
+          });
+    }
   }
 
   void signOut() async {
@@ -235,5 +308,4 @@ class _HomePageState extends State<HomePage>
       print(e);
     }
   }
-
 }
