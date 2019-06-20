@@ -18,7 +18,6 @@ class Model {
     this._current = obj['current'];
   }
 
-
   String get id => _id;
   String get name => _name;
   String get createdOn => timeago.format(_createdOn);

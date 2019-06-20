@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage>
   StreamSubscription<Event> _onModelAddedSubscription;
   StreamSubscription<Event> _onModelChangedSubscription;
   AnimationController _controller;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
   DatabaseReference modelsRef;
 
@@ -217,6 +218,7 @@ class _HomePageState extends State<HomePage>
                     ),
                   ),
                 ),
+
                 Container(
                     child:Flexible(
                       child: FirebaseAnimatedList(
@@ -302,8 +304,12 @@ class _HomePageState extends State<HomePage>
 
         )
 
+
       );
     }
+  }
+  Future<Null> _refresh(){
+
   }
   Future<bool> _confirmDismiss(direction) async{
     bool x = await _showDialog("Do you want to remove model?", "Click yes if you want to remove", 1);
