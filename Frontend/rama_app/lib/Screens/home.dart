@@ -8,6 +8,7 @@ import '../Setup/FABBottomAppBar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'newmodel.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
+import '../Setup/logoAnimation.dart';
 
 class HomePage extends StatefulWidget {
   UserRepository _userRepository;
@@ -35,6 +36,7 @@ class _HomePageState extends State<HomePage>
   int _x = 0;
   StreamSubscription<Event> _onModelAddedSubscription;
   StreamSubscription<Event> _onModelChangedSubscription;
+  AnimationController _controller;
 
   DatabaseReference modelsRef;
 
@@ -42,7 +44,18 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     models = new List();
+
+    modelsRef =  widget._db.child(widget._id).child("models");
+    _onModelAddedSubscription = modelsRef.onChildAdded.listen(_onModelAdd);
+
+    _controller = AnimationController(
+        duration: const Duration(milliseconds: 4000),
+        vsync: this
+    );
+    _controller.forward();
   }
+
+
 
   void _selectedTab(int index) {
     setState(() {
@@ -57,6 +70,7 @@ class _HomePageState extends State<HomePage>
     _onModelAddedSubscription.cancel();
     _onModelChangedSubscription.cancel();
     super.dispose();
+    _controller.dispose();
   }
   void search(){
 
@@ -65,6 +79,7 @@ class _HomePageState extends State<HomePage>
 
   }
   List<Widget> getRow() {
+
       return <Widget>[
         InkWell(
           child: Icon(Icons.search, color: Theme.of(context).splashColor,),
@@ -75,7 +90,10 @@ class _HomePageState extends State<HomePage>
         Flexible(
           child: Container(
             alignment: Alignment.center,
-            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover, ),
+            child: StaggerAnimation(
+              controller: _controller.view,
+            )
+
           ),
         ),
         InkWell(
@@ -94,9 +112,6 @@ class _HomePageState extends State<HomePage>
   }
   @override
   Widget build(BuildContext context) {
-
-    modelsRef =  widget._db.child(widget._id).child("models");
-    _onModelAddedSubscription = modelsRef.onChildAdded.listen(_onModelAdd);
 
     Size size = MediaQuery.of(context).size;
     final double statusBarHeight = MediaQuery.of(context).padding.top;
@@ -210,7 +225,7 @@ class _HomePageState extends State<HomePage>
                         itemBuilder: (BuildContext bc, DataSnapshot ds, Animation<double> animation, int index){
 
                           return Dismissible(
-                            key: Key(index.toString()),
+                            key: Key(index.toString() + models.length.toString()),
                             background: Container(padding:EdgeInsets.only(left: 20, right: 20), color: Colors.red, child:
                             Center(
                                 child:
@@ -222,12 +237,13 @@ class _HomePageState extends State<HomePage>
                             onDismissed: (direction){
                               if(models.contains(models[index])) {
                                 setState(() {
-                                  models.removeAt(index);
+
                                   widget._db.child(widget._id).child(
                                       "models")
                                       .child(models[index].id)
                                       .remove();
                                 });
+                                models.removeAt(index);
                               }
                             },
                             child: Container(
@@ -291,8 +307,6 @@ class _HomePageState extends State<HomePage>
   }
   Future<bool> _confirmDismiss(direction) async{
     bool x = await _showDialog("Do you want to remove model?", "Click yes if you want to remove", 1);
-    print("HELLO");
-    print(x);
     return x;
   }
   _onModelAdd(Event event){

@@ -5,7 +5,7 @@ import 'dart:io';
 import 'user_repository.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'loginAnimation.dart';
+import 'logoAnimation.dart';
 
 class Login extends StatefulWidget {
   UserRepository _userRepository;
