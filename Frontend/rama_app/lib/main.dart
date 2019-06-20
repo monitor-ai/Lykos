@@ -25,7 +25,7 @@ class _AppState extends State<App> with TickerProviderStateMixin {
   int status = -1;
   AnimationController controller;
   Animation<double> animation;
-  String id;
+  String id, _email;
 
   initState() {
     super.initState();
@@ -77,7 +77,12 @@ class _AppState extends State<App> with TickerProviderStateMixin {
     DatabaseReference db = dbInstance.reference();
 
     if(status == 1){
-      home = HomePage(_userRepository, _signedOut, db, id);
+      _userRepository.getUserEmail().then((String email){
+        setState(() {
+          _email = email;
+        });
+      });
+      home = HomePage(_userRepository, _signedOut, db, id, _email);
     }
     else if(status == 0){
       home = Login(_userRepository, _signedIn, db);

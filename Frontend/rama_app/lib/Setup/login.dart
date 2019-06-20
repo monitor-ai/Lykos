@@ -5,7 +5,7 @@ import 'dart:io';
 import 'user_repository.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'logoAnimation.dart';
+import '../Setup/progressbutton.dart';
 
 class Login extends StatefulWidget {
   UserRepository _userRepository;
@@ -32,7 +32,8 @@ class _LoginState extends State<Login> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   BuildContext context;
   int animationStatus = 0;
-  AnimationController _loginButtonController;
+  ProgressButton buttonProgress;
+  ButtonState _buttonState = ButtonState.normal;
 
   @override
   void initState() {
@@ -50,6 +51,17 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     this.context = context;
+    buttonProgress = ProgressButton(
+      child: Text(
+        "LOGIN",
+        style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Raleway',
+            fontSize: 17),
+      ),
+      buttonState: _buttonState,
+      onPressed: signIn,
+    );
     if(widget.formType == true){
       return loginForm();
     }
@@ -359,20 +371,19 @@ class _LoginState extends State<Login> {
                                               top: 10, bottom: 0),
                                           width: double.infinity,
                                           child: RaisedButton(
+                                            onPressed: signIn,
+                                            color: Theme.of(context).primaryColor,
                                             shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                 BorderRadius.circular(100)),
                                             padding: EdgeInsets.all(20),
-                                            onPressed: signIn,
 
                                             child: Text("SIGN IN",
                                                 style: TextStyle(
-                                                  fontSize: 17,
                                                     color: Colors.white,
                                                     fontFamily: 'Raleway')),
-                                            color:
-                                            Color.fromRGBO(60, 117, 209, 1),
-                                          )
+
+                                          ),
 
                                       ),
 
@@ -460,16 +471,8 @@ class _LoginState extends State<Login> {
         });
       }
   }
-  Future<Null> _playAnimation() async {
-    try {
-      await _loginButtonController.forward();
-      await _loginButtonController.reverse();
-    }
-    on TickerCanceled{}
-  }
-  Future<void> signIn() async {
-    _playAnimation();
 
+  Future<void> signIn() async {
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
@@ -477,21 +480,21 @@ class _LoginState extends State<Login> {
           _formKey.currentState.save();
           try {
             setState(() {
-              loading=true;
+              _buttonState = ButtonState.inProgress;
             });
             await widget._userRepository.signInWithCredentials(_email, _password);
             widget._signedIn();
 
           } catch (e) {
             setState(() {
-              loading=false;
+              _buttonState = ButtonState.inProgress;
             });
           }
         }
       }
     } on SocketException catch (_) {
       setState(() {
-        loading=false;
+        _buttonState = ButtonState.inProgress;
       });
     }
 
