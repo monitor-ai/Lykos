@@ -66,11 +66,15 @@ class _AppState extends State<App> with TickerProviderStateMixin {
       });
     });
   }
-  final db = FirebaseDatabase.instance.reference();
-
+  final dbInstance = FirebaseDatabase.instance;
   @override
   Widget build(BuildContext context) {
     Widget home = null;
+
+    dbInstance.setPersistenceEnabled(true);
+    dbInstance.setPersistenceCacheSizeBytes(10000000);
+
+    DatabaseReference db = dbInstance.reference();
 
     if(status == 1){
       home = HomePage(_userRepository, _signedOut, db, id);
@@ -90,17 +94,17 @@ class _AppState extends State<App> with TickerProviderStateMixin {
     return new MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Rama App",
-
+        color: Colors.white,
         theme: ThemeData(
             primaryColor: Color(0xFF3c75d1),
+            splashColor: Color(0xFF3c75d1),
             accentColor: Color(0xFF3264b5),
             buttonColor: Color(0xFF3c75d1),
-            backgroundColor: Color(0xFFEFEFEF)
+            backgroundColor: Colors.white
         ),
 
-        home: Material(
-          child: home,
-        )
+        home: home,
+
     );
   }
 

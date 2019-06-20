@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter/services.dart';
 
 class NewModel extends StatefulWidget{
   DatabaseReference _db;
@@ -35,18 +36,19 @@ class _NewModelState extends State<NewModel>{
         resizeToAvoidBottomPadding: true,
         backgroundColor: Theme
             .of(context)
-            .primaryColor,
+            .splashColor,
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.white),
-          title: Text("New Model", style: TextStyle(fontFamily: "Raleway"),),
+          title: Text("New Model", style: TextStyle(fontFamily: "Raleway", color: Colors.white),),
           centerTitle: true,
           elevation: 0,
-
+          brightness: Brightness.dark,
+          backgroundColor: Theme.of(context).splashColor,
         ),
         floatingActionButton: FloatingActionButton.extended(
-            icon: Icon(Icons.save, color: Theme.of(context).primaryColor,),
+            icon: Icon(Icons.save, color: Theme.of(context).splashColor,),
             backgroundColor: Colors.white,
-            label: Text("Save", style: TextStyle(color: Theme.of(context).primaryColor),),
+            label: Text("Save", style: TextStyle(color: Theme.of(context).splashColor),),
             onPressed: save,
         ),
         body: Container(
@@ -133,6 +135,8 @@ class _NewModelState extends State<NewModel>{
       form.save();
       modelRef.set({
         'name': ModelName,
+        'createdOn': DateTime.now().toString(),
+        'lastUpdatedOn': DateTime.now().toString(),
       });
       Navigator.pop(context);
 

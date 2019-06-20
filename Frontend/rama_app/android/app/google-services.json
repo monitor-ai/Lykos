@@ -8,6 +8,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:534934777846:android:0ad085b5c14a6f34",
+        "android_client_info": {
+          "package_name": "ai.monitor.lykos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534934777846-98cc3uo813iuq6kuuj6j6kr4crbpte2m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlJ3_uHw5y2Xe-g-oRacwSEmEUrzlM8mo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534934777846-98cc3uo813iuq6kuuj6j6kr4crbpte2m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:534934777846:android:c504e7160e48dacb",
         "android_client_info": {
           "package_name": "edu.pict.rama_app"
