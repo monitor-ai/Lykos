@@ -209,7 +209,7 @@ class _HomePageState extends State<HomePage>
                                 index.toString() + models.length.toString()),
                             background: Container(
                                 padding: EdgeInsets.only(left: 20, right: 20),
-                                color: Colors.red,
+                                color: Theme.of(context).splashColor,
                                 child: Center(
                                     child: Icon(
                                   Icons.delete,
@@ -244,19 +244,67 @@ class _HomePageState extends State<HomePage>
                                             blurRadius: 10.0,
                                             offset: Offset(0.0, 10.0))
                                       ]),
+                                  child: Container(
+                                    alignment: Alignment.topLeft,
+                                    margin: EdgeInsets.only(left: 70, top: 15),
+                                    width: MediaQuery.of(context).size.width,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                            models[index].name,
+                                          style: TextStyle(
+                                            fontSize: 25,
+                                            fontFamily: "Raleway"
+                                          ),
+                                        ),
+                                        Text(
+                                          models[index].id,
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontFamily: "Raleway"
+                                          ),
+                                        ),
+                                        Text(
+                                          models[index].lastUpdatedOn,
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontFamily: "Raleway"
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                                 Container(
+
                                   margin:
                                       new EdgeInsets.symmetric(vertical: 16.0),
                                   alignment: FractionalOffset.centerLeft,
-                                  child: CircleAvatar(
 
-                                    child: Image.asset(
-                                      'assets/images/user.jpg',
-                                      fit: BoxFit.cover,
-                                      
+                                  child: ClipOval(
+                                    child:  WaveWidget(
+
+                                      config: CustomConfig(
+                                        gradients: [
+                                          [Colors.red, models[index].getColor(1)],
+                                          [Colors.blue, models[index].getColor(2)],
+                                          [Colors.green, models[index].getColor(3)],
+                                          [Colors.yellow, models[index].getColor(4)]
+                                        ],
+                                        durations: [35000, 19440, 10800, 6000],
+                                        heightPercentages: [0.20, 0.23, 0.25, 0.30],
+                                        blur: MaskFilter.blur(BlurStyle.solid, 10),
+                                        gradientBegin: Alignment.bottomLeft,
+                                        gradientEnd: Alignment.topRight,
+                                      ),
+                                      waveAmplitude: 0,
+                                      backgroundColor: Colors.blue,
+                                      size: Size(90, 90),
+
                                     ),
-                                  )
+                                  ),
                                 ),
 
                               ],

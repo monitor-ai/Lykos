@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -20,6 +23,8 @@ class _NewModelState extends State<NewModel>{
   final formKey = GlobalKey<FormState>();
   String ModelName;
   String ModelKey;
+  List<MaterialColor> colors = Colors.primaries;
+  Random random = new Random();
 
   FocusNode _focusNode = new FocusNode();
   @override
@@ -137,7 +142,14 @@ class _NewModelState extends State<NewModel>{
         'name': ModelName,
         'createdOn': DateTime.now().toString(),
         'lastUpdatedOn': DateTime.now().toString(),
+        'colors': json.encode({
+          'color1': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+          'color2': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+          'color3': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+          'color4': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+        }),
       });
+    
       Navigator.pop(context);
 
     }
