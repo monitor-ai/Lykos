@@ -147,7 +147,9 @@ class _NewModelState extends State<NewModel>{
           'color2': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
           'color3': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
           'color4': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
-        }),
+        },
+        ),
+        'current': '1',
       });
     
       Navigator.pop(context);

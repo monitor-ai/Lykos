@@ -6,6 +6,7 @@ import 'package:rama_app/Setup/model.dart';
 import '../Setup/user_repository.dart';
 import '../Setup/FABBottomAppBar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'dashboard.dart';
 import 'newmodel.dart';
 import 'package:wave/wave.dart';
 import 'package:wave/config.dart';
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage>
 
     modelsRef = widget._db.child(widget._id).child("models");
     _onModelAddedSubscription = modelsRef.onChildAdded.listen(_onModelAdd);
-
+    _onModelChangedSubscription = modelsRef.onChildChanged.listen(_onModelChange);
     _controller = AnimationController(
         duration: const Duration(milliseconds: 4000), vsync: this);
     _controller.forward();
@@ -111,6 +112,12 @@ class _HomePageState extends State<HomePage>
     MaskFilter.blur(BlurStyle.outer, 10.0),
     MaskFilter.blur(BlurStyle.solid, 16.0),
   ];
+  void openModelDash(int index){
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => Dashboard(models[index])));
+  }
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -175,30 +182,55 @@ class _HomePageState extends State<HomePage>
               SliverAppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                title: Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    children: getRow(),
-                  ),
+                title:
+                  Container(
 
-                  margin: EdgeInsets.only(left: 5, right: 5),
-                  decoration: BoxDecoration(
-                    boxShadow: [BoxShadow(
-                      color: Colors.grey,
-                      blurRadius: 10.0,
-                    ),],
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10)
+                    padding: EdgeInsets.only(left: 10, right: 10),
+                    child: Material(
+                      child: InkWell(
+                        child: Row(
+                          children: getRow(),
+
+                        ),
+                        splashColor: Colors.grey,
+                      ),
+                    ),
+                    margin: EdgeInsets.only(left: 5, right: 5),
+                    decoration: BoxDecoration(
+                        boxShadow: [BoxShadow(
+                          color: Colors.grey,
+                          blurRadius: 5.0,
+                        ),],
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10)
                   ),
                 ),
                 floating: true,
                 expandedHeight: 80,
               ),
-
-              SliverList(
-
+              models.isEmpty?SliverList(
                 delegate: SliverChildBuilderDelegate((BuildContext bc, int index){
+                  return Center(
+                    child: Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.only(top: 150),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(Icons.book, color: Colors.white54,size: 100,),
+                          Text("No models available!", style: TextStyle(color: Colors.white54),),
+                          Text("Click on New Model to add new models", style: TextStyle(color: Colors.white54),)
 
+                        ],
+                      ),
+                    ),
+                  );
+                }, childCount: 1),
+
+              ):
+              SliverList(
+                delegate: SliverChildBuilderDelegate((BuildContext bc, int index){
                   return Container(
                     margin: EdgeInsets.only(left: 10, right: 10),
                     child: Dismissible(
@@ -240,41 +272,50 @@ class _HomePageState extends State<HomePage>
                                         blurRadius: 10.0,
                                         offset: Offset(0.0, 10.0))
                                   ]),
-                              child: Container(
-                                alignment: Alignment.topLeft,
-                                margin: EdgeInsets.only(left: 70, top: 15),
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      models[index].name,
-                                      style: TextStyle(
-                                          fontSize: 25,
-                                          fontFamily: "Raleway"
-                                      ),
-                                    ),
-                                    Text(
-                                      models[index].id,
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontFamily: "Raleway"
-                                      ),
-                                    ),
-                                    Text(
-                                      models[index].lastUpdatedOn,
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontFamily: "Raleway"
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Container(
+                              child: Material(
+                                borderRadius: BorderRadius.circular(10),
+                                child: InkWell(
 
+                                  onTap: () { openModelDash(index); },
+
+                                  splashColor: Colors.grey,
+                                  child: Container(
+                                    alignment: Alignment.topLeft,
+                                    margin: EdgeInsets.only(left: 70, top: 15),
+                                    width: MediaQuery.of(context).size.width,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          models[index].name,
+                                          style: TextStyle(
+                                              fontSize: 25,
+                                              fontFamily: "Raleway"
+                                          ),
+                                        ),
+                                        Text(
+                                          models[index].id,
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontFamily: "Raleway"
+                                          ),
+                                        ),
+                                        Text(
+                                          models[index].lastUpdatedOn,
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontFamily: "Raleway"
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                ,
+                                )
+                              ),
+                            Container(
                               margin:
                               new EdgeInsets.symmetric(vertical: 16.0),
                               alignment: FractionalOffset.centerLeft,
@@ -310,6 +351,9 @@ class _HomePageState extends State<HomePage>
                 },
                   childCount: models.length
                 ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.only(top: 30),
               )
             ],
           )
@@ -326,6 +370,12 @@ class _HomePageState extends State<HomePage>
   _onModelAdd(Event event) {
     setState(() {
       models.insert(0, new Model.fromSnapshot(event.snapshot));
+    });
+  }
+  _onModelChange(Event event){
+    var oldModel = models.singleWhere((model) => model.id == event.snapshot.key);
+    setState(() {
+      models[models.indexOf(oldModel)] = Model.fromSnapshot(event.snapshot);
     });
   }
 
