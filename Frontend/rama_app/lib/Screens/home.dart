@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage>
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => Dashboard(models[index])));
+            builder: (context) => Dashboard(models[index], modelsRef.child(models[index].id))));
   }
   @override
   Widget build(BuildContext context) {
