@@ -30,6 +30,7 @@ dependencies:
   bezier_chart: "^1.0.10"
   progress_button: ^0.0.2
   wave: ^0.0.8
+  fl_chart: ^0.1.5
 
   intl: ^0.15.2
   timeago: ^2.0.16
