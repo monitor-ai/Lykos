@@ -50,6 +50,9 @@ class _DashboardState extends State<Dashboard> {
   _onAccuracyAdd(Event event) {
     setState(() {
       X = double.parse(event.snapshot.key);
+      if(X.toInt() == 1){
+        dataAcc.clear();
+      }
       Y = event.snapshot.value;
       if (X > AMX) {
         AMX = X;
@@ -72,6 +75,9 @@ class _DashboardState extends State<Dashboard> {
   _onLossAdd(Event event) {
     setState(() {
       X = double.parse(event.snapshot.key);
+      if(X.toInt() == 1){
+        data.clear();
+      }
       Y = event.snapshot.value;
       if (X > MX) {
         MX = X;
@@ -87,7 +93,7 @@ class _DashboardState extends State<Dashboard> {
       }
 
       data.add(FlSpot(X, (Y * 10000).round() / 10000));
-      epoch = k.toString();
+      epoch = X.toInt().toString();
       lastLoss = data.last.y.toString();
       k = k + 1;
     });
@@ -99,7 +105,6 @@ class _DashboardState extends State<Dashboard> {
       Color(0xff23b6e6),
       Color(0xff02d39a),
     ];
-    print(_data.length.toString());
     if(_data.length > 0) {
       return AspectRatio(
         aspectRatio: 1.70,
@@ -147,7 +152,8 @@ class _DashboardState extends State<Dashboard> {
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
-                      getTitles: (value) {},
+                      getTitles: (value) {
+                      },
                       reservedSize: 0,
                     ),
                   ),

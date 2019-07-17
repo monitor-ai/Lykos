@@ -1,44 +1,49 @@
-import sys
-from firebase_admin import db
-import numpy as np
-import firebase_admin
-from firebase_admin import credentials
-from keras.models import Sequential
-from keras.layers import Dense, Activation
+import pyrebase
+import datetime
 from keras.callbacks import Callback
-import pandas as pd
-
-'''
-total_epochs = int(sys.argv[1])
-current_epoch = int(sys.argv[2])
-username = str(sys.argv[3])
-model_name = str(sys.argv[4])
-data_path = str(sys.argv[5])
-weights_path = str(sys.argv[6])
-'''
-#print(sys.argv)
-
-cred = credentials.Certificate("ml-parameter-firebase-adminsdk-kzlzj-689846709e.json")
-
-firebase_admin.initialize_app(cred, {'databaseURL': 'https://ml-parameter.firebaseio.com/'})
-
-data = pd.read_csv('data.csv')
-X_train = np.array(data.iloc[:, [2, 3]])
-Y_train = np.array(data.iloc[:, 4])
-
-username = "v9v2yLltojMI356JmztFRUxXQhp1"
-model_name = "-Ljj2C8oeVTA4-SzMz6c"
-total_epochs = 100
-current_epoch = 1
 
 
+class Lykos:
+    def __init__(self, email, password, model_key):
+        config = {
+          "apiKey": "AIzaSyByFcG5hKP9GfDjcADHpM1LOL8Y4_IadNI",
+          "authDomain": "ml-parameter.firebaseapp.com",
+          "databaseURL": "https://ml-parameter.firebaseio.com/",
+          "storageBucket": "ml-parameter.appspot.com"
+        }
+        self.firebase = pyrebase.initialize_app(config)
+        self.email = email
+        self.password = password
+        self.model_key = model_key
+
+    def Loss_Monitor(self):
+        history = TrainingPlot(self.firebase, self.email, self.password, self.model_key)
+        return history
+    '''
+    def Pause_Model(username, model_name, weights_path):
+        pause = Pausing_Model(email, model_name, weights_path)
+        return pause
+    def Update_Db_Epoch(username, model_name, current_epoch):
+        update = Update_Epoch(email, model_name, current_epoch)
+        return update
+    '''
+    
 class TrainingPlot(Callback):
-
-    def __init__(self, username, model_name):
+    
+    def __init__(self, firebase, email, password, model_key):
         super(Callback, self).__init__()
-        self.username = username
-        self.model_name = model_name
-
+        self.auth = firebase.auth()
+        self.db = firebase.database()
+        self.username = self.authenticate(email, password)
+        self.model_key = model_key
+        
+    def authenticate(self, email, password):
+        try:
+            user = self.auth.sign_in_with_email_and_password(email, password)
+        except:
+            raise Exception("There is no user with that credentials. Please try and correct it.")
+        return user['localId']
+    
     # This function is called when the training begins
     def on_train_begin(self, logs={}):
         # Initialize the lists for holding the logs, losses and accuracies
@@ -60,139 +65,51 @@ class TrainingPlot(Callback):
         # Append the logs, losses and accuracies to the lists
         self.logs.append(logs)
         self.losses.append(logs.get('loss'))
-        self.acc.append(str(logs.get('acc')))
+        self.acc.append(logs.get('acc'))
         #self.val_losses.append(logs.get('val_loss'))
         #self.val_acc.append(logs.get('val_acc'))
-        main_ref = db.reference('/')
-        users_ref = main_ref.child(self.username).child(self.model_name)
-        users_ref.update({'acc':self.acc, 'loss':self.losses})                       
+        main_ref = self.db
+        users_ref = main_ref.child(self.username).child("models").child(self.model_key)
+        users_ref.update({'acc':self.acc, 'loss':self.losses, 'lastUpdatedOn': str(datetime.datetime.now().isoformat())})
 
-##Callback Pausing_Model for model pausing
-class Pausing_Model(Callback):
-    
-    def __init__(self, username, model_name, weights_path):
-        super(Callback, self).__init__()
-        self.username = username
-        self.model_name = model_name
-        self.weights_path = weights_path
-        self.main_ref = db.reference('/')
-        self.users_ref = self.main_ref.child(self.username).child("models").child(self.model_name).child("stop_flag")
-        self.stop_flag = self.users_ref.get()
-        self.epoch=0
+'''
+MAIN MODULE
+'''
+from keras.models import Sequential
+from keras.layers import Dense, Activation
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
 
-    def on_epoch_begin(self, epoch, logs={}):
-        #code to update flag from firebase
-        self.main_ref = db.reference('/')
-        self.users_ref = self.main_ref.child(self.username).child("models").child(self.model_name).child("stop_flag")
-        self.stop_flag =self.users_ref.get()
-        if self.stop_flag==1:
-            self.model.stop_training = True
-            self.model.save_weights(self.weights_path + 'model_weights.h5')
-            main_ref = db.reference('/')
-            users_ref = main_ref.child(self.username).child("models").child(self.model_name).child("current_epoch")
-            users_ref.set(self.epoch)
-            print("training stopped-epoch begin %d" % epoch)
-        else:
-            self.epoch=self.epoch+1
+email = "chintupokar@gmail.com"
+password = "india123"
+model_key = "-Ljj2C8oeVTA4-SzMz6c"
+total_epochs = 100
+current_epoch = 1
 
-    def on_epoch_end(self, epoch, logs={}):
-        #code to update flag from firebase
-        self.main_ref = db.reference('/')
-        self.users_ref = self.main_ref.child(self.username).child("models").child(self.model_name).child("stop_flag")
-        self.stop_flag =self.users_ref.get()
-        if self.stop_flag==1:
-            self.model.stop_training = True
-            self.model.save_weights(self.weights_path + 'model_weights.h5')
-            main_ref = db.reference('/')
-            users_ref = main_ref.child(self.username).child("models").child(self.model_name).child("current_epoch")
-            users_ref.set(self.epoch)
-            print("training stopped-epoch end %d" % epoch)
+data = pd.read_csv('data.csv')
+X_train = np.array(data.iloc[:, [2, 3]])
+Y_train = np.array(data.iloc[:, 4])
 
-    def on_batch_begin(self, batch, logs={}):
-        #code to update flag from firebase
-        self.main_ref = db.reference('/')
-        self.users_ref = self.main_ref.child(self.username).child("models").child(self.model_name).child("stop_flag")
-        self.stop_flag =self.users_ref.get()
-        if self.stop_flag==1:
-            self.model.stop_training = True
-            self.model.save_weights(self.weights_path + 'model_weights.h5')
-            main_ref = db.reference('/')
-            users_ref = main_ref.child(self.username).child("models").child(self.model_name).child("current_epoch")
-            users_ref.set(self.epoch)
-            print("training stopped-batch begin %d" % batch)
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
 
-    def on_batch_end(self, batch, logs={}):
-        #code to update flag from firebase
-        self.main_ref = db.reference('/')
-        self.users_ref = self.main_ref.child(self.username).child("models").child(self.model_name).child("stop_flag")
-        self.stop_flag =self.users_ref.get()
-        if self.stop_flag==1:
-            self.model.stop_training = True
-            self.model.save_weights(self.weights_path + 'model_weights.h5')
-            main_ref = db.reference('/')
-            users_ref = main_ref.child(self.username).child("models").child(self.model_name).child("current_epoch")
-            users_ref.set(self.epoch)
-            print("training stopped-batch end %d" % batch)
-
-    def on_train_begin(self, logs={}):
-        #code to update flag from firebase
-        self.main_ref = db.reference('/')
-        self.users_ref = self.main_ref.child(self.username).child("models").child(self.model_name).child("stop_flag")
-        self.stop_flag =self.users_ref.get()
-        if self.stop_flag==1:
-            self.model.stop_training = True
-            self.model.save_weights(self.weights_path + 'model_weights.h5')
-            main_ref = db.reference('/')
-            users_ref = main_ref.child(self.username).child("models").child(self.model_name).child("current_epoch")
-            users_ref.set(self.epoch)
-            print("training stopped-train begin")
-            
-class Update_Epoch(Callback):            
-    def __init__(self, username, model_name, current_epoch):
-        super(Callback, self).__init__()
-        self.username = username
-        self.model_name = model_name
-        self.current_epoch = current_epoch
-        
-    def on_epoch_begin(self, epoch, logs={}):
-        main_ref = db.reference('/')
-        users_ref = main_ref.child(username).child(model_name)
-        users_ref.update({"current_epoch":(epoch+1)})
-    
-class ML_Parameter:
-    
-    def Loss_Monitor(username, model_name):
-        history = TrainingPlot(username, model_name)
-        return history
-    def Pause_Model(username, model_name, weights_path):
-        pause = Pausing_Model(username, model_name, weights_path)
-        return pause
-    def Update_Db_Epoch(username, model_name, current_epoch):
-        update = Update_Epoch(username, model_name, current_epoch)
-        return update
-        
-        
 def generateModel():
 
     model = Sequential()
     model.add(Dense(2,input_dim=(2)))
-    model.add(Dense(64))
-    model.add(Activation('relu'))
-    model.add(Dense(32))
-    model.add(Activation('relu'))
     model.add(Dense(16))
-    model.add(Activation('relu'))
+    model.add(Activation('sigmoid'))
     model.add(Dense(1))
     model.add(Activation('sigmoid'))
-
-    model.compile(optimizer = 'Adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-
+    model.compile(optimizer = 'adadelta', loss = 'binary_crossentropy', metrics = ['accuracy'])
     return model
 
 model = generateModel()
 model.summary()
-history = ML_Parameter.Loss_Monitor(username, model_name)
+lykos = Lykos(email, password, model_key)
+history = lykos.Loss_Monitor()
 #pause = ML_Parameter.Pause_Model(username, model_name, weights_path)
 #update = ML_Parameter.Update_Db_Epoch(username, model_name, current_epoch)
 
-model.fit(X_train, Y_train, epochs=total_epochs-current_epoch, callbacks=[history], verbose = 1)            
+model.fit(X_train, Y_train, epochs=total_epochs-current_epoch, callbacks=[history], verbose = 1)
