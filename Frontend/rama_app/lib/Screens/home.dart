@@ -12,7 +12,7 @@ import 'package:wave/wave.dart';
 import 'package:wave/config.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import '../Setup/logoAnimation.dart';
-
+List<Model> models = new List();
 class HomePage extends StatefulWidget {
   UserRepository _userRepository;
   VoidCallback _signedOut;
@@ -34,6 +34,7 @@ class HomePage extends StatefulWidget {
 }
 
 class DataSearch extends SearchDelegate<Model>{
+  final recentSearch = [];
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -61,15 +62,54 @@ class DataSearch extends SearchDelegate<Model>{
   }
   @override
   Widget buildSuggestions(BuildContext context) {
-    return Container(
-      child: Text("Results"),
+    final sL = query.isEmpty ? recentSearch : models.where((p) => p.name.startsWith(query)).toList();
+    return ListView.builder(
+      itemBuilder: (context, index){
+        return ListTile(
+          leading: ClipOval(
+            child: WaveWidget(
+              config: CustomConfig(
+                gradients: [
+                  [Colors.red, sL[index].getColor(1)],
+                  [Colors.blue, sL[index].getColor(2)],
+                  [Colors.green, sL[index].getColor(3)],
+                  [Colors.yellow, sL[index].getColor(4)]
+                ],
+                durations: [35000, 19440, 10800, 6000],
+                heightPercentages: [0.20, 0.23, 0.25, 0.30],
+                blur: MaskFilter.blur(BlurStyle.solid, 10),
+                gradientBegin: Alignment.bottomLeft,
+                gradientEnd: Alignment.topRight,
+              ),
+              waveAmplitude: 0,
+              backgroundColor: Colors.blue,
+              size: Size(30, 30),
+            ),
+          ),
+          title: RichText(
+            text: TextSpan(
+              text: sL[index].name.substring(0, query.length),
+              style: TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold,
+              ),
+                children: [
+                  TextSpan(
+                    text: sL[index].name.substring(query.length),
+                    style: TextStyle(color: Colors.grey),
+                  )
+                ]
+            )
+          ),
+        );
+      },
+      itemCount: sL.length,
     );
   }
 }
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  List<Model> models;
+  //List<Model> models;
   String _email = "NULL";
   String _fName = "NULL", _lName = "NULL";
   int _x = 0;
@@ -170,10 +210,14 @@ class _HomePageState extends State<HomePage>
             last = value;
           }
         });
+        widget._userRepository.getUserEmail().then((String email){
+          setState(() {
+            _email = email;
+          });
+        });
         setState(() {
           _fName = first.toString();
           _lName = last.toString();
-          _email = widget._email;
         });
       });
 
