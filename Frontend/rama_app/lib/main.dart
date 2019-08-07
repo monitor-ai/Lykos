@@ -25,7 +25,7 @@ class _AppState extends State<App> with TickerProviderStateMixin {
   int status = -1;
   AnimationController controller;
   Animation<double> animation;
-  String id, _email;
+  String id = "NULL", _email="NULL";
 
   initState() {
     super.initState();
@@ -82,7 +82,20 @@ class _AppState extends State<App> with TickerProviderStateMixin {
           _email = email;
         });
       });
-      home = HomePage(_userRepository, _signedOut, db, id, _email);
+      _userRepository.currentUser().then((String x){
+        setState(() {
+          id = x;
+        });
+      });
+      if(id != "NULL") {
+        home = HomePage(_userRepository, _signedOut, db, id, _email);
+      }
+      else{
+        home = Container(
+          height: 100,
+          child: SpinKitDoubleBounce(color: Theme.of(context).primaryColor),
+        );
+      }
     }
     else if(status == 0){
       home = Login(_userRepository, _signedIn, db);

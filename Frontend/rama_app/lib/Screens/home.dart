@@ -36,8 +36,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   List<Model> models;
-  String _email = "";
-  String _fName = "", _lName = "";
+  String _email = "NULL";
+  String _fName = "NULL", _lName = "NULL";
   int _x = 0;
   StreamSubscription<Event> _onModelAddedSubscription;
   StreamSubscription<Event> _onModelChangedSubscription;
@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     models = new List();
-
+    print(widget._id);
     modelsRef = widget._db.child(widget._id).child("models");
     _onModelAddedSubscription = modelsRef.onChildAdded.listen(_onModelAdd);
     _onModelChangedSubscription = modelsRef.onChildChanged.listen(_onModelChange);
@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage>
     Size size = MediaQuery.of(context).size;
     final double statusBarHeight = MediaQuery.of(context).padding.top;
 
-    if (_fName == "" && _lName == "" && _email == "") {
+    if (_fName == "NULL" && _lName == "NULL" && _email == "NULL") {
       widget._db.child(widget._id).once().then((DataSnapshot snapshot) {
         Map<dynamic, dynamic> x = snapshot.value;
         dynamic first, last;
