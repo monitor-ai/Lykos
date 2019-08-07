@@ -33,6 +33,40 @@ class HomePage extends StatefulWidget {
   }
 }
 
+class DataSearch extends SearchDelegate<Model>{
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(icon: Icon(Icons.clear), onPressed: (){},)
+    ];
+  }
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: AnimatedIcon(icon: AnimatedIcons.menu_arrow, progress: transitionAnimation,),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+  @override
+  void close(BuildContext context, Model result) {
+    super.close(context, result);
+  }
+  @override
+  Widget buildResults(BuildContext context) {
+    return Container(
+      child: Text("Results"),
+    );
+  }
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return Container(
+      child: Text("Results"),
+    );
+  }
+}
+
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   List<Model> models;
@@ -84,7 +118,9 @@ class _HomePageState extends State<HomePage>
           Icons.search,
           color: Theme.of(context).splashColor,
         ),
-        onTap: search,
+        onTap: (){
+          showSearch(context: context, delegate: DataSearch());
+        },
         splashColor: Colors.grey,
       ),
       Flexible(
@@ -179,18 +215,17 @@ class _HomePageState extends State<HomePage>
               SliverPadding(
                 padding: EdgeInsets.only(top: 15),
               ),
+              //The Top Bar with search
               SliverAppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 title:
                   Container(
-
                     padding: EdgeInsets.only(left: 10, right: 10),
                     child: Material(
                       child: InkWell(
                         child: Row(
                           children: getRow(),
-
                         ),
                         splashColor: Colors.grey,
                       ),
