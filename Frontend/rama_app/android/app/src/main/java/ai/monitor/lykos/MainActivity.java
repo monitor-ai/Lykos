@@ -1,4 +1,4 @@
-package edu.pict.rama_app;
+package ai.monitor.lykos;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

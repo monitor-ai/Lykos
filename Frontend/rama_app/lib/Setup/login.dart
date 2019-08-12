@@ -5,7 +5,7 @@ import 'dart:io';
 import 'user_repository.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_database/firebase_database.dart';
-
+import '../Setup/progressbutton.dart';
 
 class Login extends StatefulWidget {
   UserRepository _userRepository;
@@ -25,15 +25,43 @@ class Login extends StatefulWidget {
 
 }
 
-class _LoginState extends State<Login>{
+class _LoginState extends State<Login> {
   String _email, _password;
+  bool loading = false;
   String _firstName, _lastName;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   BuildContext context;
+  int animationStatus = 0;
+  ProgressButton buttonProgress;
+  ButtonState _buttonState = ButtonState.normal;
+
+  @override
+  void initState() {
+    super.initState();
+
+
+  }
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
     this.context = context;
+    buttonProgress = ProgressButton(
+      child: Text(
+        "LOGIN",
+        style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Raleway',
+            fontSize: 17),
+      ),
+      buttonState: _buttonState,
+      onPressed: signIn,
+    );
     if(widget.formType == true){
       return loginForm();
     }
@@ -48,7 +76,7 @@ class _LoginState extends State<Login>{
       systemNavigationBarIconBrightness: Brightness.light
     ));
     return Container(
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).splashColor,
         child: Container(
             alignment: Alignment.center,
             child: Container(
@@ -178,6 +206,8 @@ class _LoginState extends State<Login>{
                                             onSaved: (input) =>
                                             _password = input,
                                           )),
+
+
                                       Container(
 
                                         margin: EdgeInsets.only(
@@ -199,6 +229,8 @@ class _LoginState extends State<Login>{
                                         ),
 
                                       ),
+
+
                                       Container(
                                           alignment: Alignment.center,
                                           margin: EdgeInsets.only(top: 20),
@@ -242,7 +274,7 @@ class _LoginState extends State<Login>{
       systemNavigationBarIconBrightness: Brightness.light// navigation bar color
     ));
     return Container(
-        color: Color.fromRGBO(60, 117, 209, 1),
+        color: Theme.of(context).splashColor,
         child: Container(
             alignment: Alignment.center,
             child: Container(
@@ -331,23 +363,33 @@ class _LoginState extends State<Login>{
                                             onSaved: (input) =>
                                             _password = input,
                                           )),
+
+
+
                                       Container(
                                           margin: EdgeInsets.only(
                                               top: 10, bottom: 0),
                                           width: double.infinity,
                                           child: RaisedButton(
+                                            onPressed: signIn,
+                                            color: Theme.of(context).primaryColor,
                                             shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                 BorderRadius.circular(100)),
                                             padding: EdgeInsets.all(20),
-                                            onPressed: signIn,
+
                                             child: Text("SIGN IN",
                                                 style: TextStyle(
                                                     color: Colors.white,
                                                     fontFamily: 'Raleway')),
-                                            color:
-                                            Color.fromRGBO(60, 117, 209, 1),
-                                          )),
+
+                                          ),
+
+                                      ),
+
+
+
+
                                       Container(
                                           alignment: Alignment.center,
                                           margin: EdgeInsets.only(top: 20),
@@ -381,7 +423,9 @@ class _LoginState extends State<Login>{
                   ],
                 ))));
   }
+  void invalid(){
 
+  }
   void changeForm(){
     if(widget.formType == false){
       setState(() {
@@ -401,7 +445,9 @@ class _LoginState extends State<Login>{
         if (_formKey.currentState.validate()) {
           _formKey.currentState.save();
           try {
-            _showDialog("Registering you...", "Please wait while we register you!", false);
+            setState(() {
+              loading= true;
+            });
             await widget._userRepository.signUp(_email, _password);
             String uid = await widget._userRepository.currentUser();
             widget._db.child(uid).set({
@@ -413,14 +459,19 @@ class _LoginState extends State<Login>{
 
           } catch (e) {
             Navigator.of(context).pop();
-            _showDialog("Error", "Wrong Username or Password", true);
+            setState(() {
+              loading = false;
+            });
           }
         }
       }
     } on SocketException catch (_) {
-      _showDialog("No Internet Access", "Please enable Wi-Fi or Mobile Data to continue", true);
-    }
+        setState(() {
+          loading = false;
+        });
+      }
   }
+
   Future<void> signIn() async {
     try {
       final result = await InternetAddress.lookup('google.com');
@@ -428,54 +479,25 @@ class _LoginState extends State<Login>{
         if (_formKey.currentState.validate()) {
           _formKey.currentState.save();
           try {
-            _showDialog("Signing in...", "Please wait while we sign you in!", false);
+            setState(() {
+              _buttonState = ButtonState.inProgress;
+            });
             await widget._userRepository.signInWithCredentials(_email, _password);
-            Navigator.of(context).pop();
             widget._signedIn();
 
           } catch (e) {
-            Navigator.of(context).pop();
-            _showDialog("Error", "Wrong Username or Password", true);
+            setState(() {
+              _buttonState = ButtonState.inProgress;
+            });
           }
         }
       }
     } on SocketException catch (_) {
-      _showDialog("No Internet Access", "Please enable Wi-Fi or Mobile Data to continue", true);
+      setState(() {
+        _buttonState = ButtonState.inProgress;
+      });
     }
 
-  }
-  _showDialog(title, text, okButton) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        List<Widget> actions = null;
-        Widget content = null;
-        if(okButton == true){
-          actions = <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ];
-          content = Text(text, textAlign: TextAlign.center,);
-        }
-        else{
-          actions = <Widget>[];
-          content = Container(
-            height: 100,
-            child: SpinKitDoubleBounce(color: Theme.of(context).primaryColor),
-          );
-        }
-        return AlertDialog(
-          title: Text(title, textAlign: TextAlign.center,),
-          content: content,
-          actions: actions,
-        );
-      },
-      barrierDismissible: okButton,
-    );
   }
 }
 

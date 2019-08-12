@@ -25,7 +25,7 @@ class _AppState extends State<App> with TickerProviderStateMixin {
   int status = -1;
   AnimationController controller;
   Animation<double> animation;
-  String id;
+  String id = "NULL", _email="NULL";
 
   initState() {
     super.initState();
@@ -66,14 +66,36 @@ class _AppState extends State<App> with TickerProviderStateMixin {
       });
     });
   }
-  final db = FirebaseDatabase.instance.reference();
-
+  final dbInstance = FirebaseDatabase.instance;
   @override
   Widget build(BuildContext context) {
     Widget home = null;
 
+    dbInstance.setPersistenceEnabled(true);
+    dbInstance.setPersistenceCacheSizeBytes(10000000);
+
+    DatabaseReference db = dbInstance.reference();
+
     if(status == 1){
-      home = HomePage(_userRepository, _signedOut, db, id);
+      _userRepository.getUserEmail().then((String email){
+        setState(() {
+          _email = email;
+        });
+      });
+      _userRepository.currentUser().then((String x){
+        setState(() {
+          id = x;
+        });
+      });
+      if(id != "NULL") {
+        home = HomePage(_userRepository, _signedOut, db, id, _email);
+      }
+      else{
+        home = Container(
+          height: 100,
+          child: SpinKitDoubleBounce(color: Theme.of(context).primaryColor),
+        );
+      }
     }
     else if(status == 0){
       home = Login(_userRepository, _signedIn, db);
@@ -90,17 +112,17 @@ class _AppState extends State<App> with TickerProviderStateMixin {
     return new MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Rama App",
-
+        color: Colors.white,
         theme: ThemeData(
             primaryColor: Color(0xFF3c75d1),
+            splashColor: Color(0xFF3c75d1),
             accentColor: Color(0xFF3264b5),
             buttonColor: Color(0xFF3c75d1),
-            backgroundColor: Color(0xFFEFEFEF)
+            backgroundColor: Colors.white
         ),
 
-        home: Material(
-          child: home,
-        )
+        home: home,
+
     );
   }
 

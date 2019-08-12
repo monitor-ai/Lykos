@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter/services.dart';
 
 class NewModel extends StatefulWidget{
   DatabaseReference _db;
@@ -19,6 +23,8 @@ class _NewModelState extends State<NewModel>{
   final formKey = GlobalKey<FormState>();
   String ModelName;
   String ModelKey;
+  List<MaterialColor> colors = Colors.primaries;
+  Random random = new Random();
 
   FocusNode _focusNode = new FocusNode();
   @override
@@ -35,18 +41,19 @@ class _NewModelState extends State<NewModel>{
         resizeToAvoidBottomPadding: true,
         backgroundColor: Theme
             .of(context)
-            .primaryColor,
+            .splashColor,
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.white),
-          title: Text("New Model", style: TextStyle(fontFamily: "Raleway"),),
+          title: Text("New Model", style: TextStyle(fontFamily: "Raleway", color: Colors.white),),
           centerTitle: true,
           elevation: 0,
-
+          brightness: Brightness.dark,
+          backgroundColor: Theme.of(context).splashColor,
         ),
         floatingActionButton: FloatingActionButton.extended(
-            icon: Icon(Icons.save, color: Theme.of(context).primaryColor,),
+            icon: Icon(Icons.save, color: Theme.of(context).splashColor,),
             backgroundColor: Colors.white,
-            label: Text("Save", style: TextStyle(color: Theme.of(context).primaryColor),),
+            label: Text("Save", style: TextStyle(color: Theme.of(context).splashColor),),
             onPressed: save,
         ),
         body: Container(
@@ -133,7 +140,18 @@ class _NewModelState extends State<NewModel>{
       form.save();
       modelRef.set({
         'name': ModelName,
+        'createdOn': DateTime.now().toString(),
+        'lastUpdatedOn': DateTime.now().toString(),
+        'colors': json.encode({
+          'color1': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+          'color2': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+          'color3': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+          'color4': colors[random.nextInt(colors.length)].value.toRadixString(16).substring(2, 8),
+        },
+        ),
+        'current': '1',
       });
+    
       Navigator.pop(context);
 
     }
