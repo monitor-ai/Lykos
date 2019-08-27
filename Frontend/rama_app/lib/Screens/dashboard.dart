@@ -102,16 +102,15 @@ class _DashboardState extends State<Dashboard> {
   Widget getMain(
       List<FlSpot> _data, double _CX, double _CY, double _MX, double _MY) {
     List<Color> gradientColors = [
-      Color(0xff23b6e6),
-      Color(0xff02d39a),
+      Theme.of(context).splashColor,
+      Colors.blue,
     ];
     if(_data.length > 0) {
       return AspectRatio(
         aspectRatio: 1.70,
         child: Container(
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(18)),
-              color: Color(0xff232d37)),
+              color: Colors.white),
           child: Padding(
             padding: const EdgeInsets.only(
                 right: 18.0, left: 12.0, top: 24, bottom: 12),
@@ -123,14 +122,14 @@ class _DashboardState extends State<Dashboard> {
                     drawHorizontalGrid: true,
                     getDrawingVerticalGridLine: (value) {
                       return const FlLine(
-                        color: Color(0xff37434d),
-                        strokeWidth: 1,
+                        color: Colors.grey,
+                        strokeWidth: 0.2,
                       );
                     },
                     getDrawingHorizontalGridLine: (value) {
                       return const FlLine(
-                        color: Color(0xff37434d),
-                        strokeWidth: 1,
+                        color: Colors.grey,
+                        strokeWidth: 0.2,
                       );
                     },
                   ),
@@ -140,7 +139,7 @@ class _DashboardState extends State<Dashboard> {
                       showTitles: true,
                       reservedSize: 0,
                       textStyle: TextStyle(
-                          color: const Color(0xff68737d),
+                          color: Theme.of(context).splashColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16),
                       getTitles: (value) {},
@@ -148,7 +147,7 @@ class _DashboardState extends State<Dashboard> {
                     leftTitles: SideTitles(
                       showTitles: true,
                       textStyle: TextStyle(
-                        color: const Color(0xff67727d),
+                        color: Theme.of(context).splashColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -158,8 +157,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                   borderData: FlBorderData(
-                      show: true,
-                      border: Border.all(color: Color(0xff37434d), width: 1)),
+                      show: false,),
                   minX: _CX,
                   maxX: _MX,
                   minY: _CY,
@@ -169,7 +167,7 @@ class _DashboardState extends State<Dashboard> {
                       spots: _data,
                       isCurved: true,
                       colors: gradientColors,
-                      barWidth: 5,
+                      barWidth: 2,
                       isStrokeCapRound: true,
                       dotData: FlDotData(
                         show: false,
@@ -197,220 +195,215 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Theme.of(context).splashColor,
-        body: Stack(
+      appBar: AppBar(
+        elevation: 0,
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 10,
-                  left: 10,
-                  right: 10),
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      BackButton(
-                        color: Colors.white,
-                      ),
-                      ClipOval(
-                        child: WaveWidget(
-                          config: CustomConfig(
-                            gradients: [
-                              [Colors.red, widget.model.getColor(1)],
-                              [Colors.blue, widget.model.getColor(2)],
-                              [Colors.green, widget.model.getColor(3)],
-                              [Colors.yellow, widget.model.getColor(4)]
-                            ],
-                            durations: [35000, 19440, 10800, 6000],
-                            heightPercentages: [0.20, 0.23, 0.25, 0.30],
-                            blur: MaskFilter.blur(BlurStyle.solid, 10),
-                            gradientBegin: Alignment.bottomLeft,
-                            gradientEnd: Alignment.topRight,
-                          ),
-                          waveAmplitude: 0,
-                          backgroundColor: Colors.blue,
-                          size: Size(30, 30),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 10),
-                      ),
-                      Text(
-                        widget.model.name,
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                    ],
-                  ),
-                  Container(
-                      margin: EdgeInsets.all(10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Column(
-                            children: <Widget>[
-                              Container(
-                                  child: Card(
-                                    child: Column(
-                                      children: <Widget>[
-                                        Container(
-                                          margin: EdgeInsets.only(top: 30, left: 30, right: 30, bottom: 10),
-                                          child: Text(
-                                            "Epoch",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontFamily: 'Raleway'),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(bottom: 20),
-                                          child: Text(
-                                            epoch,
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontFamily: 'Raleway'),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    color: Color(0xff232d37),
-                                  ))
-                            ],
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Container(
-                                  margin: EdgeInsets.all(10),
-                                  child: Card(
-                                    child: Column(
-                                      children: <Widget>[
-                                        Container(
-                                          margin: EdgeInsets.only(top: 30, left: 30, right: 30, bottom: 10),
-                                          child: Text(
-                                            "Last Update",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontFamily: 'Raleway'),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(bottom: 20),
-                                          child: Text(
-                                            widget.model.lastUpdatedOn,
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontFamily: 'Raleway'),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    color: Color(0xff232d37),
-                                  ))
-                            ],
-                          ),
-
-                        ],
-                      )),
-                  Container(
-                          margin: EdgeInsets.all(10),
-                          child: Card(
-                            color: Color(0xff232d37),
-                            child: Container(
-                                width: double.infinity,
-                                margin: EdgeInsets.all(10),
-                                child: Column(
-                                  children: <Widget>[
-                                    Container(
-                                      margin: EdgeInsets.only(
-                                          left: 20,
-                                          top: 20,
-                                          right: 20,
-                                          bottom: 20),
-                                      alignment: Alignment.topLeft,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Text(
-                                            "Loss",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontFamily: 'Raleway'),
-                                          ),
-                                          Text(
-                                            lastLoss,
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontFamily: 'Raleway'),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: getMain(data, CX, CY, MX, MY),
-                                    ),
-                                  ],
-                                )),
-                          ),
-                        ),
-
-                  Container(
-                          margin: EdgeInsets.all(10),
-                          child: Card(
-                            color: Color(0xff232d37),
-                            child: Container(
-                                width: double.infinity,
-                                margin: EdgeInsets.all(10),
-                                child: Column(
-                                  children: <Widget>[
-                                    Container(
-                                      margin: EdgeInsets.only(
-                                          left: 20,
-                                          top: 20,
-                                          right: 20,
-                                          bottom: 20),
-                                      alignment: Alignment.topLeft,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Text(
-                                            "Accuracy",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontFamily: 'Raleway'),
-                                          ),
-                                          Text(
-                                            lastAcc,
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontFamily: 'Raleway'),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      alignment: Alignment.centerLeft,
-                                      child:
-                                          getMain(dataAcc, ACX, ACY, AMX, AMY),
-                                    ),
-                                  ],
-                                )),
-                          ),
-                        )
-                ],
+            ClipOval(
+              child: WaveWidget(
+                config: CustomConfig(
+                  gradients: [
+                    [Colors.red, widget.model.getColor(1)],
+                    [Colors.blue, widget.model.getColor(2)],
+                    [Colors.green, widget.model.getColor(3)],
+                    [Colors.yellow, widget.model.getColor(4)]
+                  ],
+                  durations: [35000, 19440, 10800, 6000],
+                  heightPercentages: [0.20, 0.23, 0.25, 0.30],
+                  blur: MaskFilter.blur(BlurStyle.solid, 10),
+                  gradientBegin: Alignment.bottomLeft,
+                  gradientEnd: Alignment.topRight,
+                ),
+                waveAmplitude: 0,
+                backgroundColor: Colors.blue,
+                size: Size(30, 30),
               ),
             ),
+            Padding(
+              padding: EdgeInsets.only(left: 10),
+            ),
+            Text(
+              widget.model.name,
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
           ],
+        ),
+      ),
+        backgroundColor: Theme.of(context).splashColor,
+        body: SingleChildScrollView(
+          child: Stack(
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(
+                    left: 10,
+                    right: 10),
+                child: Column(
+                  children: <Widget>[
+
+                    Container(
+                        margin: EdgeInsets.all(10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Card(
+                              child: Column(
+                                children: <Widget>[
+                                  Container(
+                                    margin: EdgeInsets.only(top: 30, left: 30, right: 30, bottom: 10),
+                                    child: Text(
+                                      "Epoch",
+                                      style: TextStyle(
+                                          color: Theme.of(context).splashColor,
+                                          fontSize: 20,
+                                          fontFamily: 'Raleway'),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 20),
+                                    child: Text(
+                                      epoch,
+                                      style: TextStyle(
+                                          color: Theme.of(context).splashColor,
+                                          fontSize: 20,
+                                          fontFamily: 'Raleway'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              color: Colors.white,
+                            ),
+
+                              Expanded(
+                                child: Card(
+                                  child: Column(
+                                    children: <Widget>[
+                                      Container(
+                                        margin: EdgeInsets.only(top: 30, left: 30, right: 30, bottom: 10),
+                                        child: Text(
+                                          "Last Update",
+                                          style: TextStyle(
+                                              color: Theme.of(context).splashColor,
+                                              fontSize: 20,
+                                              fontFamily: 'Raleway'),
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(bottom: 20),
+                                        child: Text(
+                                          widget.model.lastUpdatedOn,
+                                          style: TextStyle(
+                                              color: Theme.of(context).splashColor,
+                                              fontSize: 20,
+                                              fontFamily: 'Raleway'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  color: Colors.white,
+                                )
+                              ),
+
+                          ],
+                        )),
+                    Container(
+                      margin: EdgeInsets.all(10),
+                      child: Card(
+                        color: Colors.white,
+                        child: Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.all(10),
+                            child: Column(
+                              children: <Widget>[
+
+                                Container(
+                                  margin: EdgeInsets.only(
+                                      left: 20,
+                                      top: 20,
+                                      right: 20,
+                                      bottom: 20),
+                                  alignment: Alignment.topLeft,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(
+                                        "Loss",
+                                        style: TextStyle(
+                                            color: Theme.of(context).splashColor,
+                                            fontSize: 20,
+                                            fontFamily: 'Raleway'),
+                                      ),
+                                      Text(
+                                        lastLoss,
+                                        style: TextStyle(
+                                            color: Theme.of(context).splashColor,
+                                            fontSize: 15,
+                                            fontFamily: 'Raleway'),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: getMain(data, CX, CY, MX, MY),
+                                ),
+                              ],
+                            )),
+                      ),
+                    ),
+
+                    Container(
+                      margin: EdgeInsets.all(10),
+                      child: Card(
+                        color: Colors.white,
+                        child: Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.all(10),
+                            child: Column(
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(
+                                      left: 20,
+                                      top: 20,
+                                      right: 20,
+                                      bottom: 20),
+                                  alignment: Alignment.topLeft,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(
+                                        "Accuracy",
+                                        style: TextStyle(
+                                            color: Theme.of(context).splashColor,
+                                            fontSize: 20,
+                                            fontFamily: 'Raleway'),
+                                      ),
+                                      Text(
+                                        lastAcc,
+                                        style: TextStyle(
+                                            color: Theme.of(context).splashColor,
+                                            fontSize: 15,
+                                            fontFamily: 'Raleway'),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  child:
+                                  getMain(dataAcc, ACX, ACY, AMX, AMY),
+                                ),
+                              ],
+                            )),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
         ));
   }
 }

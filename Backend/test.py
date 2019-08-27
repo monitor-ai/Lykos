@@ -19,6 +19,17 @@ class Lykos:
     def Loss_Monitor(self):
         history = TrainingPlot(self.firebase, self.email, self.password, self.model_key)
         return history
+    def fit(self, model, X, Y, epochs = 10, verbose = 1):        
+        history = self.Loss_Monitor()
+        if(X_train is None):
+            raise Exception("Please add independent variable!")
+        if(Y_train is None):
+            raise Exception("Please add dependent variable!")
+        if(epochs is None):
+            raise Exception("Please add epochs variable!")
+
+        model.fit(X_train, Y_train, epochs=epochs, callbacks=[history], verbose = verbose)
+        
     '''
     def Pause_Model(username, model_name, weights_path):
         pause = Pausing_Model(email, model_name, weights_path)
@@ -108,8 +119,7 @@ def generateModel():
 model = generateModel()
 model.summary()
 lykos = Lykos(email, password, model_key)
-history = lykos.Loss_Monitor()
+lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)
 #pause = ML_Parameter.Pause_Model(username, model_name, weights_path)
 #update = ML_Parameter.Update_Db_Epoch(username, model_name, current_epoch)
 
-model.fit(X_train, Y_train, epochs=total_epochs-current_epoch, callbacks=[history], verbose = 1)

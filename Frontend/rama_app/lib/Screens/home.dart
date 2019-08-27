@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:rama_app/Setup/model.dart';
@@ -10,9 +9,14 @@ import 'dashboard.dart';
 import 'newmodel.dart';
 import 'package:wave/wave.dart';
 import 'package:wave/config.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import '../Setup/logoAnimation.dart';
+
+//Global Level Variables
 List<Model> models = new List();
+DatabaseReference modelsRef;
+
 class HomePage extends StatefulWidget {
   UserRepository _userRepository;
   VoidCallback _signedOut;
@@ -35,6 +39,7 @@ class HomePage extends StatefulWidget {
 
 class DataSearch extends SearchDelegate<Model>{
   final recentSearch = [];
+
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -52,6 +57,9 @@ class DataSearch extends SearchDelegate<Model>{
   }
   @override
   void close(BuildContext context, Model result) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarBrightness: Brightness.dark
+    ));
     super.close(context, result);
   }
   @override
@@ -65,42 +73,53 @@ class DataSearch extends SearchDelegate<Model>{
     final sL = query.isEmpty ? recentSearch : models.where((p) => p.name.startsWith(query)).toList();
     return ListView.builder(
       itemBuilder: (context, index){
-        return ListTile(
-          leading: ClipOval(
-            child: WaveWidget(
-              config: CustomConfig(
-                gradients: [
-                  [Colors.red, sL[index].getColor(1)],
-                  [Colors.blue, sL[index].getColor(2)],
-                  [Colors.green, sL[index].getColor(3)],
-                  [Colors.yellow, sL[index].getColor(4)]
-                ],
-                durations: [35000, 19440, 10800, 6000],
-                heightPercentages: [0.20, 0.23, 0.25, 0.30],
-                blur: MaskFilter.blur(BlurStyle.solid, 10),
-                gradientBegin: Alignment.bottomLeft,
-                gradientEnd: Alignment.topRight,
+        return Card(
+            child: InkWell(
+              splashColor: Colors.grey,
+              child: ListTile(
+              leading: ClipOval(
+                child: WaveWidget(
+                  config: CustomConfig(
+                    gradients: [
+                      [Colors.red, sL[index].getColor(1)],
+                      [Colors.blue, sL[index].getColor(2)],
+                      [Colors.green, sL[index].getColor(3)],
+                      [Colors.yellow, sL[index].getColor(4)]
+                    ],
+                    durations: [35000, 19440, 10800, 6000],
+                    heightPercentages: [0.20, 0.23, 0.25, 0.30],
+                    blur: MaskFilter.blur(BlurStyle.solid, 10),
+                    gradientBegin: Alignment.bottomLeft,
+                    gradientEnd: Alignment.topRight,
+                  ),
+                  waveAmplitude: 0,
+                  backgroundColor: Colors.blue,
+                  size: Size(30, 30),
+                ),
               ),
-              waveAmplitude: 0,
-              backgroundColor: Colors.blue,
-              size: Size(30, 30),
-            ),
-          ),
-          title: RichText(
-            text: TextSpan(
-              text: sL[index].name.substring(0, query.length),
-              style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold,
-              ),
-                children: [
-                  TextSpan(
-                    text: sL[index].name.substring(query.length),
-                    style: TextStyle(color: Colors.grey),
+              title: RichText(
+                  text: TextSpan(
+                      text: sL[index].name.substring(0, query.length),
+                      style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: sL[index].name.substring(query.length),
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      ]
                   )
-                ]
-            )
-          ),
-        );
+              ),
+            ),
+
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Dashboard(sL[index], modelsRef.child(sL[index].id))));
+          },
+        ),);
       },
       itemCount: sL.length,
     );
@@ -117,7 +136,6 @@ class _HomePageState extends State<HomePage>
   StreamSubscription<Event> _onModelChangedSubscription;
   AnimationController _controller;
   double pad = 0;
-  DatabaseReference modelsRef;
 
   @override
   void initState() {
@@ -265,24 +283,23 @@ class _HomePageState extends State<HomePage>
                 elevation: 0,
                 title:
                   Container(
-                    padding: EdgeInsets.only(left: 10, right: 10),
                     child: Material(
+                      borderRadius: BorderRadius.circular(10),
                       child: InkWell(
-                        child: Row(
-                          children: getRow(),
+                        child: Container(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child: Row(
+                            children: getRow(),
+                          ),
                         ),
                         splashColor: Colors.grey,
+                        onTap: () {
+                          showSearch(context: context, delegate: DataSearch());
+                        },
                       ),
                     ),
                     margin: EdgeInsets.only(left: 5, right: 5),
-                    decoration: BoxDecoration(
-                        boxShadow: [BoxShadow(
-                          color: Colors.grey,
-                          blurRadius: 5.0,
-                        ),],
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10)
-                  ),
+
                 ),
                 floating: true,
                 expandedHeight: 80,
