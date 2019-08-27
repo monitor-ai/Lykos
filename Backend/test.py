@@ -145,7 +145,5 @@ def generateModel():
 model = generateModel()
 model.summary()
 lykos = Lykos(email, password)
-lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)
-#pause = ML_Parameter.Pause_Model(username, model_name, weights_path)
-#update = ML_Parameter.Update_Db_Epoch(username, model_name, current_epoch)
 
+lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)

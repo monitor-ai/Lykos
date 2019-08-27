@@ -245,7 +245,6 @@ class _HomePageState extends State<HomePage>
         child: SpinKitDoubleBounce(color: Theme.of(context).splashColor),
       );
     } else {
-      //_onModelChangedSubscription = modelsRef.onChildChanged.listen(_onModelUpdate);
       models.sort((a,b) {
         return b.lastUpdatedOnTime.compareTo(a.lastUpdatedOnTime);
       });
