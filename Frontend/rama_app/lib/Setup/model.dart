@@ -32,6 +32,9 @@ class Model {
   String get name => _name;
   String get createdOn => timeago.format(_createdOn);
   String get lastUpdatedOn => timeago.format(_lastUpdatedOn);
+  DateTime get lastUpdatedOnTime => _lastUpdatedOn;
+  DateTime get createdOnTime => _createdOn;
+
   String get current => _current;
 
   Color getColor(int i){

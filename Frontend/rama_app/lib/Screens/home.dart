@@ -246,6 +246,9 @@ class _HomePageState extends State<HomePage>
       );
     } else {
       //_onModelChangedSubscription = modelsRef.onChildChanged.listen(_onModelUpdate);
+      models.sort((a,b) {
+        return b.lastUpdatedOnTime.compareTo(a.lastUpdatedOnTime);
+      });
       return Scaffold(
           backgroundColor: Theme.of(context).splashColor,
           bottomNavigationBar: FABBottomAppBar(
@@ -357,7 +360,7 @@ class _HomePageState extends State<HomePage>
                           children: <Widget>[
                             Container(
                               height: 124,
-                              margin: EdgeInsets.only(left: 46, bottom: 10+pad),
+                              margin: EdgeInsets.only(bottom: 10+pad),
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.rectangle,
@@ -377,7 +380,7 @@ class _HomePageState extends State<HomePage>
                                   splashColor: Colors.grey,
                                   child: Container(
                                     alignment: Alignment.topLeft,
-                                    margin: EdgeInsets.only(left: 70, top: 15),
+                                    margin: EdgeInsets.only(left: 120, top: 15),
                                     width: MediaQuery.of(context).size.width,
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.start,
@@ -413,7 +416,7 @@ class _HomePageState extends State<HomePage>
                               ),
                             Container(
                               margin:
-                              new EdgeInsets.symmetric(vertical: 16.0),
+                              new EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
                               alignment: FractionalOffset.centerLeft,
 
                               child: ClipOval(
@@ -465,7 +468,8 @@ class _HomePageState extends State<HomePage>
 
   _onModelAdd(Event event) {
     setState(() {
-      models.insert(0, new Model.fromSnapshot(event.snapshot));
+      models.add(new Model.fromSnapshot(event.snapshot));
+
     });
   }
   _onModelChange(Event event){
