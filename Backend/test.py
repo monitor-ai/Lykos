@@ -1,10 +1,11 @@
 import pyrebase
 import datetime
 from keras.callbacks import Callback
-import time
+import qrcode
+import matplotlib.pyplot as plt
 
 class Lykos:
-    def __init__(self, email, password, model_key):
+    def __init__(self, email, password, model_key = "auto"):
         config = {
           "apiKey": "AIzaSyByFcG5hKP9GfDjcADHpM1LOL8Y4_IadNI",
           "authDomain": "ml-parameter.firebaseapp.com",
@@ -15,12 +16,14 @@ class Lykos:
         self.email = email
         self.password = password
         self.model_key = model_key
+        self.history = self.Loss_Monitor()
+
 
     def Loss_Monitor(self):
         history = TrainingPlot(self.firebase, self.email, self.password, self.model_key)
         return history
+    
     def fit(self, model, X, Y, epochs = 10, verbose = 1):        
-        history = self.Loss_Monitor()
         if(X_train is None):
             raise Exception("Please add independent variable!")
         if(Y_train is None):
@@ -28,7 +31,7 @@ class Lykos:
         if(epochs is None):
             raise Exception("Please add epochs variable!")
 
-        model.fit(X_train, Y_train, epochs=epochs, callbacks=[history], verbose = verbose)
+        model.fit(X_train, Y_train, epochs=epochs, callbacks=[self.history], verbose = verbose)
         
     '''
     def Pause_Model(username, model_name, weights_path):
@@ -46,7 +49,14 @@ class TrainingPlot(Callback):
         self.auth = firebase.auth()
         self.db = firebase.database()
         self.username = self.authenticate(email, password)
-        self.model_key = model_key
+        if(model_key is "auto"):
+            self.model_key = self.db.child(self.username).child("models").push({'acc': '', 'loss': ''})['name']
+            self.img = qrcode.make(self.model_key)
+            print("Scan this QRCode using App or type this in Unique ID: " + str(self.model_key))
+            plt.imshow(self.img)
+            plt.show()
+        else:
+            self.model_key = model_key
         
     def authenticate(self, email, password):
         try:
@@ -97,7 +107,7 @@ import numpy as np
 
 email = "chintupokar@gmail.com"
 password = "india123"
-model_key = "-Ljj2C8oeVTA4-SzMz6c"
+#model_key = "-Ljj2C8oeVTA4-SzMz6c"
 total_epochs = 100
 current_epoch = 1
 
@@ -121,7 +131,7 @@ def generateModel():
 
 model = generateModel()
 model.summary()
-lykos = Lykos(email, password, model_key)
+lykos = Lykos(email, password)
 lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)
 #pause = ML_Parameter.Pause_Model(username, model_name, weights_path)
 #update = ML_Parameter.Update_Db_Epoch(username, model_name, current_epoch)

@@ -214,9 +214,7 @@ class _DashboardState extends State<Dashboard> {
         ),
       );
     }
-    else{
-      return Text("No data!");
-    }
+    else{}
   }
 
   @override
@@ -261,7 +259,25 @@ class _DashboardState extends State<Dashboard> {
         body: SingleChildScrollView(
           child: Stack(
             children: <Widget>[
+              epoch=="None"?
               Container(
+                  child:Center(
+                    child: Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.only(top: 150),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(Icons.book, color: Colors.white54,size: 100,),
+                          Text("No training data available", style: TextStyle(color: Colors.white54),),
+                          Text("Copy model key to API to start training", style: TextStyle(color: Colors.white54),)
+
+                        ],
+                      ),
+                    ),
+                  )
+              ):Container(
                 margin: EdgeInsets.only(
                     left: 10,
                     right: 10),

@@ -301,7 +301,7 @@ class _HomePageState extends State<HomePage>
                         },
                       ),
                     ),
-                    margin: EdgeInsets.only(left: 5, right: 5),
+                    //margin: EdgeInsets.only(left: 5, right: 5),
 
                 ),
                 floating: true,

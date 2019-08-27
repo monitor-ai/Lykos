@@ -31,6 +31,9 @@ dependencies:
   progress_button: ^0.0.2
   wave: ^0.0.8
   fl_chart: ^0.1.5
+  path_provider: 0.4.1
+  barcode_scan: ^0.0.4
+  qr_flutter: ^1.1.1
 
   intl: ^0.15.2
   timeago: ^2.0.16
