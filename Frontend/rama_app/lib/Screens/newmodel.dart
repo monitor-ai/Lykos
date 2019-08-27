@@ -183,7 +183,7 @@ class _NewModelState extends State<NewModel>{
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      modelRef.child(this.barcode).set({
+      modelRef.child(this.barcode).update({
         'name': ModelName,
         'createdOn': DateTime.now().toString(),
         'lastUpdatedOn': DateTime.now().toString(),

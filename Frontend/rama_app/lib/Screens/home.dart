@@ -468,7 +468,7 @@ class _HomePageState extends State<HomePage>
 
   _onModelAdd(Event event) {
     setState(() {
-      models.add(new Model.fromSnapshot(event.snapshot));
+      models.insert(0, new Model.fromSnapshot(event.snapshot));
 
     });
   }

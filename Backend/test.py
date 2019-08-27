@@ -3,6 +3,7 @@ import datetime
 from keras.callbacks import Callback
 import qrcode
 import matplotlib.pyplot as plt
+import os.path
 
 class Lykos:
     def __init__(self, email, password, model_key = "auto"):
@@ -50,11 +51,23 @@ class TrainingPlot(Callback):
         self.db = firebase.database()
         self.username = self.authenticate(email, password)
         if(model_key is "auto"):
-            self.model_key = self.db.child(self.username).child("models").push({'acc': '', 'loss': ''})['name']
-            self.img = qrcode.make(self.model_key)
-            print("Scan this QRCode using App or type this in Unique ID: " + str(self.model_key))
-            plt.imshow(self.img)
-            plt.show()
+            if(os.path.exists('model_key.txt')):
+                f = open("model_key.txt", "r")
+                contents = f.read()
+                self.model_key = contents
+                self.img = qrcode.make(self.model_key)
+                plt.imshow(self.img)
+                plt.show()
+                
+            else:
+                self.model_key = self.db.child(self.username).child("models").push({'acc': '', 'loss': ''})['name']
+                self.img = qrcode.make(self.model_key)
+                f = open("model_key.txt","w+")
+                f.write(self.model_key)
+                f.close()
+                print("Scan this QRCode using App or type this in Unique ID: " + str(self.model_key))
+                plt.imshow(self.img)
+                plt.show()
         else:
             self.model_key = model_key
         
