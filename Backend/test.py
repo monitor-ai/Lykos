@@ -146,4 +146,5 @@ model = generateModel()
 model.summary()
 lykos = Lykos(email, password)
 
+#Run this after running above code
 lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)
