@@ -117,6 +117,33 @@ class _DashboardState extends State<Dashboard> {
             child: FlChart(
               chart: LineChart(
                 LineChartData(
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: TouchTooltipData(
+                      getTooltipItems: (touchedSpots){
+
+                        if (touchedSpots == null) {
+                          return null;
+                        }
+
+                        return touchedSpots.map((TouchedSpot touchedSpot) {
+                          if (touchedSpots == null || touchedSpot.spot == null) {
+                            return null;
+                          }
+
+                          final String text = "Epoch "+ touchedSpot.spot.x.toInt().toString() + ": " + touchedSpot.spot.y.toString();
+
+                          final TextStyle textStyle = TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          );
+                          return TooltipItem(text, textStyle);
+                        }).toList();
+                    },
+                      tooltipBgColor: Theme.of(context).primaryColor,
+                    )
+
+                  ),
                   gridData: FlGridData(
                     show: true,
                     drawHorizontalGrid: true,
@@ -165,7 +192,7 @@ class _DashboardState extends State<Dashboard> {
                   lineBarsData: [
                     LineChartBarData(
                       spots: _data,
-                      isCurved: true,
+                      isCurved: false,
                       colors: gradientColors,
                       barWidth: 2,
                       isStrokeCapRound: true,

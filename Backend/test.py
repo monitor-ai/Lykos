@@ -70,8 +70,10 @@ class TrainingPlot(Callback):
         pass
     def on_batch_end(self,batch,logs={}):
         pass
+    '''
     def on_epoch_begin(self, batch, logs=[]):
         self.epoch_time_start = time.time()
+    '''
     # This function is called at the end of each epoch
     def on_epoch_end(self, epoch, logs={}):                     ##Need to add try catch statement for val loss and accuracy as it cannot be put into firebase without it
         # Append the logs, losses and accuracies to the lists
@@ -82,7 +84,7 @@ class TrainingPlot(Callback):
         #self.val_acc.append(logs.get('val_acc'))
         main_ref = self.db
         users_ref = main_ref.child(self.username).child("models").child(self.model_key)
-        users_ref.update({'acc':self.acc, 'loss':self.losses, 'time': time.time() - self.epoch_time_start, 'lastUpdatedOn': str(datetime.datetime.now().isoformat())})
+        users_ref.update({'acc':self.acc, 'loss':self.losses, 'lastUpdatedOn': str(datetime.datetime.now().isoformat())})
 
 '''
 MAIN MODULE
