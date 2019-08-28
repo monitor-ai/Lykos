@@ -141,7 +141,9 @@ class _HomePageState extends State<HomePage>
   double pad = 0;
   Model backup;
   bool undo = false;
+  int global_index;
 
+  String global_index_id;
   @override
   void initState() {
     super.initState();
@@ -352,6 +354,7 @@ class _HomePageState extends State<HomePage>
                                 ))),
                         //confirmDismiss: _confirmDismiss,
                         onDismissed: (direction) {
+                          global_index_id = models[index].id;
                           backup = models[index];
                           final scaffold = _scaffoldKey.currentState;
                           scaffold.showSnackBar(
@@ -366,12 +369,12 @@ class _HomePageState extends State<HomePage>
                           models.removeAt(index);
 
                           Timer(Duration(seconds: 5), (){
-                            if (models.contains(models[index]) && !undo) {
+                            if (!undo) {
                               setState(() {
                                 widget._db
                                     .child(widget._id)
                                     .child("models")
-                                    .child(models[index].id)
+                                    .child(global_index_id)
                                     .remove();
                               });
                             }
@@ -493,10 +496,10 @@ class _HomePageState extends State<HomePage>
   _onModelAdd(Event event) {
     setState(() {
       models.insert(0, new Model.fromSnapshot(event.snapshot));
-
     });
   }
   _onModelChange(Event event){
+    print("IN MODEL CHANGE");
     var oldModel = models.singleWhere((model) => model.id == event.snapshot.key);
     setState(() {
       models[models.indexOf(oldModel)] = Model.fromSnapshot(event.snapshot);
