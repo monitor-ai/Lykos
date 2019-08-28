@@ -29,6 +29,9 @@ class _NewModelState extends State<NewModel>{
   String barcode = "None";
   FocusNode _focusNode = new FocusNode();
   var txt = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,7 @@ class _NewModelState extends State<NewModel>{
 
       modelRef = widget._db.child(widget._uid).child("models");
       return Scaffold(
+        key: _scaffoldKey,
         resizeToAvoidBottomPadding: true,
         backgroundColor: Theme
             .of(context)
@@ -166,16 +170,14 @@ class _NewModelState extends State<NewModel>{
       });
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
-        setState(() {
-          this.barcode = 'The user did not grant the camera permission!';
-        });
+        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Camera permission was not granted!")));
       } else {
-        setState(() => this.barcode = 'Unknown error: $e');
+        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Unknown Error: " + e.code)));
       }
     } on FormatException{
-      setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("User pressed back button before scanning!")));
     } catch (e) {
-      setState(() => this.barcode = 'Unknown error: $e');
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Unknown Error: " + e.code)));
     }
   }
   void save(){
@@ -195,9 +197,9 @@ class _NewModelState extends State<NewModel>{
         ),
         'current': '1',
       });
-    
-      Navigator.pop(context);
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Model Added successfully")));
 
+      Navigator.pop(context);
     }
   }
 }

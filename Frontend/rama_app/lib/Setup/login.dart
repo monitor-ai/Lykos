@@ -386,36 +386,7 @@ class _LoginState extends State<Login>{
                                             ),
 
                                           ),
-                                          /*
-                                      PhysicalModel(
-                                          color: Theme.of(context).primaryColor,
-                                          elevation: calculateElevation(),
-                                          borderRadius: BorderRadius.circular(100),
-                                          child: Container(
-                                            key: _globalKey,
-                                            height: 60,
-                                            width: _width,
-                                            child: RaisedButton(
-                                              padding: EdgeInsets.all(20),
-                                              color: _state == 2 ? Colors.green : Theme.of(context).primaryColor,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(100)),
 
-                                              child: buildButtonChild(),
-                                              onPressed: () {},
-                                              onHighlightChanged: (isPressed) {
-                                                setState(() {
-                                                  _isPressed = isPressed;
-                                                  if (_state == 0) {
-                                                    signIn();
-                                                  }
-                                                });
-                                              },
-                                            ),
-                                          )),
-
-                                       */
                                           Container(
                                               alignment: Alignment.center,
                                               margin: EdgeInsets.only(top: 20),
