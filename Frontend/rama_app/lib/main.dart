@@ -5,7 +5,6 @@ import './Screens/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import './Setup/user_repository.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/services.dart';
 
 void main() {
 
@@ -29,21 +28,17 @@ class _AppState extends State<App> {
 
   initState() {
     super.initState();
-
-
-
   }
+
   void _signedIn() {
     setState(() {
       status = 1;
-
     });
   }
 
   void _signedOut() {
     setState(() {
       status = 0;
-
     });
   }
   @override
@@ -65,7 +60,7 @@ class _AppState extends State<App> {
   final dbInstance = FirebaseDatabase.instance;
   @override
   Widget build(BuildContext context) {
-    Widget home = null;
+    Widget home;
 
     dbInstance.setPersistenceEnabled(true);
     dbInstance.setPersistenceCacheSizeBytes(10000000);

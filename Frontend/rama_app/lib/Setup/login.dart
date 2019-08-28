@@ -30,20 +30,14 @@ class _LoginState extends State<Login>{
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   BuildContext context;
   int animationStatus = 0;
-  bool _isPressed = false, _animatingReveal = false;
-  int _state = 0;
-  double _width = double.infinity;
-  Animation _animation;
-  GlobalKey _globalKey = GlobalKey();
   AnimationController _controller;
   double initialWidth;
 
   @override
   void initState() {
     super.initState();
-
-
   }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -336,9 +330,6 @@ class _LoginState extends State<Login>{
                                               TextFormField(
                                                 validator: (input) {
                                                   if (input.isEmpty) {
-                                                    setState(() {
-                                                      reset();
-                                                    });
                                                     return "Email Address is empty!";
                                                   }
                                                 },
@@ -359,9 +350,6 @@ class _LoginState extends State<Login>{
                                               child: TextFormField(
                                                 validator: (input) {
                                                   if (input.isEmpty) {
-                                                    setState(() {
-                                                      reset();
-                                                    });
                                                     return "Password is empty!";
                                                   }
                                                 },
@@ -466,45 +454,9 @@ class _LoginState extends State<Login>{
 
   @override
   void deactivate() {
-    reset();
     super.deactivate();
   }
 
-  Widget buildButtonChild() {
-    if (_state == 0) {
-      return Text("SIGN IN",
-          style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'Raleway'));
-    } else if (_state == 1) {
-      return SizedBox(
-        height: 36.0,
-        width: 36.0,
-        child: CircularProgressIndicator(
-          value: null,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
-      );
-    } else {
-      return Icon(Icons.check, color: Colors.white);
-    }
-  }
-  double calculateElevation() {
-    if (_animatingReveal) {
-      return 0.0;
-    } else {
-      return _isPressed ? 6.0 : 4.0;
-    }
-  }
-
-  void reset() {
-    _width = double.infinity;
-    _animatingReveal = false;
-    _state = 0;
-  }
-  void invalid(){
-
-  }
   void changeForm(){
     if(widget.formType == false){
       setState(() {
@@ -518,8 +470,6 @@ class _LoginState extends State<Login>{
     }
   }
   void registerIn() async{
-
-
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {

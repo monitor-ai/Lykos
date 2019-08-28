@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/services.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 
@@ -200,43 +199,5 @@ class _NewModelState extends State<NewModel>{
       Navigator.pop(context);
 
     }
-  }
-  _showDialog(title, text, okButton) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        List<Widget> actions = null;
-        Widget content = null;
-        if (okButton == true) {
-          actions = <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ];
-          content = Text(
-            text,
-            textAlign: TextAlign.center,
-          );
-        } else {
-          actions = <Widget>[];
-          content = Container(
-            height: 100,
-            child: SpinKitDoubleBounce(color: Theme.of(context).primaryColor),
-          );
-        }
-        return AlertDialog(
-          title: Text(
-            title,
-            textAlign: TextAlign.center,
-          ),
-          content: content,
-          actions: actions,
-        );
-      },
-      barrierDismissible: okButton,
-    );
   }
 }

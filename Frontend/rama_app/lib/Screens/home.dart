@@ -10,7 +10,6 @@ import 'newmodel.dart';
 import 'package:wave/wave.dart';
 import 'package:wave/config.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import '../Setup/logoAnimation.dart';
 
 //Global Level Variables
