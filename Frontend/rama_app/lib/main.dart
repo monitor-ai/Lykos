@@ -20,7 +20,7 @@ class App extends StatefulWidget{
     return _AppState();
   }
 }
-class _AppState extends State<App> with TickerProviderStateMixin {
+class _AppState extends State<App> {
   UserRepository _userRepository =  UserRepository(firebaseAuth: FirebaseAuth.instance);
   int status = -1;
   AnimationController controller;
@@ -30,10 +30,6 @@ class _AppState extends State<App> with TickerProviderStateMixin {
   initState() {
     super.initState();
 
-    controller = AnimationController(
-        duration: const Duration(milliseconds: 1500), vsync: this);
-    animation = CurvedAnimation(parent: controller, curve: Curves.easeIn);
-    controller.forward();
 
 
   }
@@ -109,7 +105,7 @@ class _AppState extends State<App> with TickerProviderStateMixin {
     else{
       home = null;
     }
-    return new MaterialApp(
+    return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Rama App",
         color: Colors.white,

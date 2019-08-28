@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rama_app/Screens/home.dart';
 import 'dart:io';
 import 'user_repository.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:firebase_database/firebase_database.dart';
-import '../Setup/progressbutton.dart';
 
 class Login extends StatefulWidget {
   UserRepository _userRepository;
@@ -25,15 +22,21 @@ class Login extends StatefulWidget {
 
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends State<Login>{
   String _email, _password;
   bool loading = false;
   String _firstName, _lastName;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   BuildContext context;
   int animationStatus = 0;
-  ProgressButton buttonProgress;
-  ButtonState _buttonState = ButtonState.normal;
+  bool _isPressed = false, _animatingReveal = false;
+  int _state = 0;
+  double _width = double.infinity;
+  Animation _animation;
+  GlobalKey _globalKey = GlobalKey();
+  AnimationController _controller;
+  double initialWidth;
 
   @override
   void initState() {
@@ -43,31 +46,25 @@ class _LoginState extends State<Login> {
   }
   @override
   void dispose() {
+    _controller.dispose();
     super.dispose();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     this.context = context;
-    buttonProgress = ProgressButton(
-      child: Text(
-        "LOGIN",
-        style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Raleway',
-            fontSize: 17),
-      ),
-      buttonState: _buttonState,
-      onPressed: signIn,
-    );
+    Widget form = null;
     if(widget.formType == true){
-      return loginForm();
+      form = loginForm();
     }
     else{
-      return registerForm();
+      form = registerForm();
     }
+    return Scaffold(
+      key: _scaffoldKey,
+      resizeToAvoidBottomPadding: true,
+      body: form,
+    );
   }
 
   Widget registerForm(){
@@ -76,6 +73,11 @@ class _LoginState extends State<Login> {
       systemNavigationBarIconBrightness: Brightness.light
     ));
     return Container(
+      color: Theme.of(context).splashColor,
+        height: double.infinity,
+        width: double.infinity,
+        child: SingleChildScrollView(
+        child:Container(
         color: Theme.of(context).splashColor,
         child: Container(
             alignment: Alignment.center,
@@ -263,10 +265,8 @@ class _LoginState extends State<Login> {
                                   ))),
                         ]))
                   ],
-                ))));
+                ))))));
   }
-
-
 
   Widget loginForm(){
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -274,154 +274,233 @@ class _LoginState extends State<Login> {
       systemNavigationBarIconBrightness: Brightness.light// navigation bar color
     ));
     return Container(
-        color: Theme.of(context).splashColor,
+      height: double.infinity,
+      width: double.infinity,
+      color: Theme.of(context).splashColor,
+      child: SingleChildScrollView(
         child: Container(
-            alignment: Alignment.center,
+          height: MediaQuery.of(context).size.height,
+            color: Theme.of(context).splashColor,
             child: Container(
+                alignment: Alignment.center,
+                child: Container(
 
-                margin: EdgeInsets.only(top: 100),
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                        margin: EdgeInsets.only(bottom: 10),
-                        child: Icon(
-                          Icons.account_circle,
-                          color: Colors.white,
-                          size: 100,
-                        )
-                    ),
-                    Card(
-                        elevation: 50,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
+                    margin: EdgeInsets.only(top: 100),
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: Icon(
+                              Icons.account_circle,
+                              color: Colors.white,
+                              size: 100,
+                            )
                         ),
+                        Card(
+                            elevation: 50,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
 
-                        margin: EdgeInsets.only(
-                            top: 20, bottom: 10, left: 20, right: 20),
-                        child: Wrap(children: <Widget>[
-                          Form(
-                              key: _formKey,
-                              child: Container(
-                                  margin: EdgeInsets.all(40),
-                                  width: double.infinity,
-                                  child: Column(
-                                    children: <Widget>[
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                            margin: EdgeInsets.only(
+                                top: 20, bottom: 10, left: 20, right: 20),
+                            child: Wrap(children: <Widget>[
+                              Form(
+                                  key: _formKey,
+                                  child: Container(
+                                      margin: EdgeInsets.all(40),
+                                      width: double.infinity,
+                                      child: Column(
                                         children: <Widget>[
-                                          Container(
-                                              margin: EdgeInsets.only(bottom: 10),
-                                              child: Text(
-                                                "Sign In",
-                                                style: TextStyle(
-                                                    fontSize: 30,
-                                                    fontFamily: 'Raleway'),
-                                              )),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                                        ],
-                                      ),
+                                            children: <Widget>[
+                                              Container(
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: Text(
+                                                    "Sign In",
+                                                    style: TextStyle(
+                                                        fontSize: 30,
+                                                        fontFamily: 'Raleway'),
+                                                  )),
 
-                                      Container(
-                                          margin: EdgeInsets.only(
-                                              top: 10, bottom: 10),
-                                          child:
-
-                                          TextFormField(
-                                            validator: (input) {
-                                              if (input.isEmpty) {
-                                                return "Email Address is empty!";
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                prefixIcon: Icon(Icons.email),
-                                                labelText: "Email",
-                                                labelStyle: TextStyle(
-                                                    fontFamily: "Raleway")),
-                                            onSaved: (input) => _email = input,
-                                          )
-
-
-
-                                      ),
-                                      Container(
-                                          margin: EdgeInsets.only(
-                                              top: 10, bottom: 30),
-                                          child: TextFormField(
-                                            validator: (input) {
-                                              if (input.isEmpty) {
-                                                return "Password is empty!";
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                              prefixIcon: Icon(Icons.lock),
-                                              labelText: "Password",
-                                              labelStyle: TextStyle(
-                                                  fontFamily: "Raleway"),
-                                            ),
-                                            obscureText: true,
-                                            onSaved: (input) =>
-                                            _password = input,
-                                          )),
-
-
-
-                                      Container(
-                                          margin: EdgeInsets.only(
-                                              top: 10, bottom: 0),
-                                          width: double.infinity,
-                                          child: RaisedButton(
-                                            onPressed: signIn,
-                                            color: Theme.of(context).primaryColor,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                BorderRadius.circular(100)),
-                                            padding: EdgeInsets.all(20),
-
-                                            child: Text("SIGN IN",
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontFamily: 'Raleway')),
-
+                                            ],
                                           ),
 
-                                      ),
+                                          Container(
+                                              margin: EdgeInsets.only(
+                                                  top: 10, bottom: 10),
+                                              child:
+
+                                              TextFormField(
+                                                validator: (input) {
+                                                  if (input.isEmpty) {
+                                                    setState(() {
+                                                      reset();
+                                                    });
+                                                    return "Email Address is empty!";
+                                                  }
+                                                },
+                                                decoration: InputDecoration(
+                                                    prefixIcon: Icon(Icons.email),
+                                                    labelText: "Email",
+                                                    labelStyle: TextStyle(
+                                                        fontFamily: "Raleway")),
+                                                onSaved: (input) => _email = input,
+                                              )
 
 
 
-
-                                      Container(
-                                          alignment: Alignment.center,
-                                          margin: EdgeInsets.only(top: 20),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              Text(
-                                                "New User? ",
-                                                style: TextStyle(
-                                                  fontFamily: "Raleway",
-                                                  fontSize: 15,
+                                          ),
+                                          Container(
+                                              margin: EdgeInsets.only(
+                                                  top: 10, bottom: 30),
+                                              child: TextFormField(
+                                                validator: (input) {
+                                                  if (input.isEmpty) {
+                                                    setState(() {
+                                                      reset();
+                                                    });
+                                                    return "Password is empty!";
+                                                  }
+                                                },
+                                                decoration: InputDecoration(
+                                                  prefixIcon: Icon(Icons.lock),
+                                                  labelText: "Password",
+                                                  labelStyle: TextStyle(
+                                                      fontFamily: "Raleway"),
                                                 ),
-                                              ),
-                                              InkWell(
-                                                child: Text(
-                                                  "Register",
+                                                obscureText: true,
+                                                onSaved: (input) =>
+                                                _password = input,
+                                              )),
+
+
+
+                                          Container(
+                                            margin: EdgeInsets.only(
+                                                top: 10, bottom: 0),
+                                            width: double.infinity,
+                                            child: RaisedButton(
+                                              onPressed: signIn,
+                                              color: Theme.of(context).primaryColor,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(100)),
+                                              padding: EdgeInsets.all(20),
+
+                                              child: Text("SIGN IN",
                                                   style: TextStyle(
-                                                    color: Theme.of(context).primaryColor,
-                                                    fontFamily: "Raleway",
-                                                    fontSize: 15,
+                                                      color: Colors.white,
+                                                      fontFamily: 'Raleway')),
+
+                                            ),
+
+                                          ),
+                                          /*
+                                      PhysicalModel(
+                                          color: Theme.of(context).primaryColor,
+                                          elevation: calculateElevation(),
+                                          borderRadius: BorderRadius.circular(100),
+                                          child: Container(
+                                            key: _globalKey,
+                                            height: 60,
+                                            width: _width,
+                                            child: RaisedButton(
+                                              padding: EdgeInsets.all(20),
+                                              color: _state == 2 ? Colors.green : Theme.of(context).primaryColor,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(100)),
+
+                                              child: buildButtonChild(),
+                                              onPressed: () {},
+                                              onHighlightChanged: (isPressed) {
+                                                setState(() {
+                                                  _isPressed = isPressed;
+                                                  if (_state == 0) {
+                                                    signIn();
+                                                  }
+                                                });
+                                              },
+                                            ),
+                                          )),
+
+                                       */
+                                          Container(
+                                              alignment: Alignment.center,
+                                              margin: EdgeInsets.only(top: 20),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                                children: <Widget>[
+                                                  Text(
+                                                    "New User? ",
+                                                    style: TextStyle(
+                                                      fontFamily: "Raleway",
+                                                      fontSize: 15,
+                                                    ),
                                                   ),
-                                                ),
-                                                onTap: changeForm,
-                                              ),
-                                            ],
-                                          ))
-                                    ],
-                                  ))),
-                        ]))
-                  ],
-                ))));
+                                                  InkWell(
+                                                    child: Text(
+                                                      "Register",
+                                                      style: TextStyle(
+                                                        color: Theme.of(context).primaryColor,
+                                                        fontFamily: "Raleway",
+                                                        fontSize: 15,
+                                                      ),
+                                                    ),
+                                                    onTap: changeForm,
+                                                  ),
+                                                ],
+                                              ))
+                                        ],
+                                      ))),
+                            ]))
+                      ],
+                    )))),
+      ),
+    );
+  }
+
+  @override
+  void deactivate() {
+    reset();
+    super.deactivate();
+  }
+
+  Widget buildButtonChild() {
+    if (_state == 0) {
+      return Text("SIGN IN",
+          style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Raleway'));
+    } else if (_state == 1) {
+      return SizedBox(
+        height: 36.0,
+        width: 36.0,
+        child: CircularProgressIndicator(
+          value: null,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      );
+    } else {
+      return Icon(Icons.check, color: Colors.white);
+    }
+  }
+  double calculateElevation() {
+    if (_animatingReveal) {
+      return 0.0;
+    } else {
+      return _isPressed ? 6.0 : 4.0;
+    }
+  }
+
+  void reset() {
+    _width = double.infinity;
+    _animatingReveal = false;
+    _state = 0;
   }
   void invalid(){
 
@@ -439,63 +518,58 @@ class _LoginState extends State<Login> {
     }
   }
   void registerIn() async{
+
+
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         if (_formKey.currentState.validate()) {
           _formKey.currentState.save();
           try {
-            setState(() {
-              loading= true;
-            });
+            _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Registering user...")));
             await widget._userRepository.signUp(_email, _password);
             String uid = await widget._userRepository.currentUser();
             widget._db.child(uid).set({
               'fName': _firstName,
               'lName': _lastName
             });
-            Navigator.of(context).pop();
             widget._signedIn();
+            _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Registration successful!")));
 
           } catch (e) {
-            Navigator.of(context).pop();
-            setState(() {
-              loading = false;
-            });
+            _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("User already exists!")));
+
           }
         }
       }
     } on SocketException catch (_) {
-        setState(() {
-          loading = false;
-        });
-      }
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Please check your internet connectivity!")));
+
+    }
   }
 
   Future<void> signIn() async {
+
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         if (_formKey.currentState.validate()) {
           _formKey.currentState.save();
           try {
-            setState(() {
-              _buttonState = ButtonState.inProgress;
-            });
+            _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Logging you in...")));
             await widget._userRepository.signInWithCredentials(_email, _password);
+            _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Logged In!")));
             widget._signedIn();
 
           } catch (e) {
-            setState(() {
-              _buttonState = ButtonState.inProgress;
-            });
+            _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Wrong Username/Password!")));
+
           }
         }
       }
     } on SocketException catch (_) {
-      setState(() {
-        _buttonState = ButtonState.inProgress;
-      });
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Please check your internet connectivity!")));
+
     }
 
   }
