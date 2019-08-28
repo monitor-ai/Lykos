@@ -25,14 +25,14 @@ class Lykos:
         return history
     
     def fit(self, model, X, Y, epochs = 10, verbose = 1):        
-        if(X_train is None):
+        if(X is None):
             raise Exception("Please add independent variable!")
-        if(Y_train is None):
+        if(Y is None):
             raise Exception("Please add dependent variable!")
         if(epochs is None):
             raise Exception("Please add epochs variable!")
 
-        model.fit(X_train, Y_train, epochs=epochs, callbacks=[self.history], verbose = verbose)
+        model.fit(X, Y, epochs=epochs, callbacks=[self.history], verbose = verbose)
         
     '''
     def Pause_Model(username, model_name, weights_path):

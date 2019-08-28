@@ -45,6 +45,7 @@ class DataSearch extends SearchDelegate<Model>{
       IconButton(icon: Icon(Icons.clear), onPressed: (){},)
     ];
   }
+
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
@@ -54,6 +55,7 @@ class DataSearch extends SearchDelegate<Model>{
       },
     );
   }
+
   @override
   void close(BuildContext context, Model result) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -61,12 +63,14 @@ class DataSearch extends SearchDelegate<Model>{
     ));
     super.close(context, result);
   }
+
   @override
   Widget buildResults(BuildContext context) {
     return Container(
       child: Text("Results"),
     );
   }
+
   @override
   Widget buildSuggestions(BuildContext context) {
     final sL = query.isEmpty ? recentSearch : models.where((p) => p.name.startsWith(query)).toList();
@@ -127,14 +131,16 @@ class DataSearch extends SearchDelegate<Model>{
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  //List<Model> models;
   String _email = "NULL";
   String _fName = "NULL", _lName = "NULL";
   int _x = 0;
   StreamSubscription<Event> _onModelAddedSubscription;
   StreamSubscription<Event> _onModelChangedSubscription;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   AnimationController _controller;
   double pad = 0;
+  Model backup;
+  bool undo = false;
 
   @override
   void initState() {
@@ -167,7 +173,9 @@ class _HomePageState extends State<HomePage>
   }
 
   void search() {}
+
   void profile() {}
+
   List<Widget> getRow() {
     return <Widget>[
       InkWell(
@@ -197,6 +205,7 @@ class _HomePageState extends State<HomePage>
       ),
     ];
   }
+
   MaskFilter _blur;
   final List<MaskFilter> _blurs = [
     null,
@@ -205,17 +214,16 @@ class _HomePageState extends State<HomePage>
     MaskFilter.blur(BlurStyle.outer, 10.0),
     MaskFilter.blur(BlurStyle.solid, 16.0),
   ];
+
   void openModelDash(int index){
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => Dashboard(models[index], modelsRef.child(models[index].id))));
   }
+
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
-
     if (_fName == "NULL" && _lName == "NULL" && _email == "NULL") {
       widget._db.child(widget._id).once().then((DataSnapshot snapshot) {
         Map<dynamic, dynamic> x = snapshot.value;
@@ -248,6 +256,7 @@ class _HomePageState extends State<HomePage>
         return b.lastUpdatedOnTime.compareTo(a.lastUpdatedOnTime);
       });
       return Scaffold(
+        key: _scaffoldKey,
           backgroundColor: Theme.of(context).splashColor,
           bottomNavigationBar: FABBottomAppBar(
             onTabSelected: _selectedTab,
@@ -341,18 +350,35 @@ class _HomePageState extends State<HomePage>
                                   Icons.delete,
                                   color: Colors.white,
                                 ))),
-                        confirmDismiss: _confirmDismiss,
+                        //confirmDismiss: _confirmDismiss,
                         onDismissed: (direction) {
-                          if (models.contains(models[index])) {
-                            setState(() {
-                              widget._db
-                                  .child(widget._id)
-                                  .child("models")
-                                  .child(models[index].id)
-                                  .remove();
-                            });
-                            models.removeAt(index);
-                          }
+                          backup = models[index];
+                          final scaffold = _scaffoldKey.currentState;
+                          scaffold.showSnackBar(
+                              new SnackBar(
+                                duration: Duration(seconds: 5),
+                                  content: Text(
+                                      "Removed Model!"
+                                  ),
+                                action: SnackBarAction(
+                                    label: 'UNDO', onPressed: undoDelete),
+                              ));
+                          models.removeAt(index);
+
+                          Timer(Duration(seconds: 5), (){
+                            if (models.contains(models[index]) && !undo) {
+                              setState(() {
+                                widget._db
+                                    .child(widget._id)
+                                    .child("models")
+                                    .child(models[index].id)
+                                    .remove();
+                              });
+                            }
+                            else{
+                              undo = false;
+                            }
+                          });
                         },
                         child: Stack(
                           children: <Widget>[
@@ -556,11 +582,17 @@ class _HomePageState extends State<HomePage>
 
   void signOut() async {
     try {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Signing out...")));
       await widget._userRepository.signOut();
       Navigator.pop(context);
       widget._signedOut();
     } catch (e) {
-      print(e);
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text("Error signing out!")));
     }
+  }
+
+  void undoDelete() {
+    models.add(backup);
+    undo = true;
   }
 }
