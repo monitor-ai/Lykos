@@ -98,7 +98,8 @@ class TrainingPlot(Callback):
         self.epoch_time_start = time.time()
     '''
     # This function is called at the end of each epoch
-    def on_epoch_end(self, epoch, logs={}):                     ##Need to add try catch statement for val loss and accuracy as it cannot be put into firebase without it
+    def on_epoch_end(self, epoch, logs={}):                     
+        ##Need to add try catch statement for val loss and accuracy as it cannot be put into firebase without it
         # Append the logs, losses and accuracies to the lists
         self.logs.append(logs)
         self.losses.append(logs.get('loss'))

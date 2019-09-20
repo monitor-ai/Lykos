@@ -487,11 +487,7 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  Future<bool> _confirmDismiss(direction) async {
-    bool x = await _showDialog(
-        "Do you want to remove model?", "Click yes if you want to remove", 1);
-    return x;
-  }
+
 
   _onModelAdd(Event event) {
     setState(() {
@@ -538,49 +534,6 @@ class _HomePageState extends State<HomePage>
             ),
           );
         });
-  }
-
-  Future<bool> _showDialog(title, text, id) async {
-    bool ret = false;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        List<Widget> actions = null;
-        Widget content = null;
-
-        actions = <Widget>[
-          FlatButton(
-            child: Text('No'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              ret = false;
-            },
-          ),
-          FlatButton(
-            child: Text('Yes'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              ret = true;
-            },
-          ),
-        ];
-        content = Text(
-          text,
-          textAlign: TextAlign.center,
-        );
-
-        return AlertDialog(
-          title: Text(
-            title,
-            textAlign: TextAlign.center,
-          ),
-          content: content,
-          actions: actions,
-        );
-      },
-      barrierDismissible: false,
-    );
-    return ret;
   }
 
   void signOut() async {
