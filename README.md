@@ -47,3 +47,11 @@ lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)
 ## Screenshots
 
 ![Lykos](https://raw.githubusercontent.com/monitor-ai/Lykos/master/Frontend/screenshots.jpg)
+
+## Contributors
+<p>
+  <a href="https://github.com/dakshpokar"><img height="100px" src="https://raw.githubusercontent.com/monitor-ai/Lykos/master/Frontend/makers/daksh.png"></a>
+  <a href="https://github.com/rahulmoorthy19"><img height="100px" src="https://raw.githubusercontent.com/monitor-ai/Lykos/master/Frontend/makers/rahul.png"></a>
+  <a href="https://github.com/arnavdodiedo"><img height="100px" src="https://raw.githubusercontent.com/monitor-ai/Lykos/master/Frontend/makers/arnav.png"></a>
+  <a href="https://github.com/13atharva"><img height="100px" src="https://raw.githubusercontent.com/monitor-ai/Lykos/master/Frontend/makers/atharva.png"></a>
+</p>
