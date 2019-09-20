@@ -7,7 +7,7 @@ An app to get the information about various ML parameters during training on the
 
 ## Setup for demo project
 
-1. Install Lykos App and register a new account.
+1. Install <a href="https://raw.githubusercontent.com/monitor-ai/Lykos/master/lykos.apk">Lykos App</a> and register a new account.
 2. Clone this repository.
 3. Navigate to Backend directory.
 4. Open test.py file.
@@ -25,7 +25,7 @@ lykos.fit(model = model, X = X_train, Y = Y_train, epochs = 100, verbose=1)
 
 ## Setup for your project
 
-1. Install Lykos App and register a new account.
+1. Install <a href="https://raw.githubusercontent.com/monitor-ai/Lykos/master/lykos.apk">Lykos App</a> and register a new account.
 2. Clone this repository.
 3. Navigate to Backend directory.
 4. Copy lykos.py to your project directory.
